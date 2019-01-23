@@ -109,7 +109,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
 
-    private IQueueIOExecutor initSingleThreadExecutor(){
+    protected IQueueIOExecutor initSingleThreadExecutor(){
         return QueueIOExecutorFactory.createExecutor(getClass().getSimpleName()+"-st",1, 1000000);
     }
 
@@ -148,7 +148,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
 
 
 
-    protected IQueueIOExecutorTask buildMainTask()
+    private IQueueIOExecutorTask buildMainTask()
     {
         return () -> {
             while (!Thread.currentThread().isInterrupted())
@@ -167,7 +167,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
         };
     }
 
-    protected IQueueIOExecutorTask buildInternalReceiverTask(TransferQueue<E> queue, IQueueIOIngestionTask<E> ingestionTask)
+    private IQueueIOExecutorTask buildInternalReceiverTask(TransferQueue<E> queue, IQueueIOIngestionTask<E> ingestionTask)
     {
         return () -> {
 
@@ -187,7 +187,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
 
-    protected IQueueIOExecutorTask buildInternalReceiverTaskSizeBatching(TransferQueue<E> queue,
+    private IQueueIOExecutorTask buildInternalReceiverTaskSizeBatching(TransferQueue<E> queue,
                                                                          IQueueIOIngestionTask<E> ingestionTask,
                                                                          int chunkSize,
                                                                          int flushTimeout,
@@ -212,7 +212,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
 
-    protected IQueueIOExecutorTask buildInternalReceiverTaskByteBatching(TransferQueue<E> queue,
+    private IQueueIOExecutorTask buildInternalReceiverTaskByteBatching(TransferQueue<E> queue,
                                                                          IQueueIOIngestionTask<E> ingestionTask,
                                                                          IQueueIOAccumulatorFactory<E> accumulatorFactory,
                                                                          int flushTimeout,
