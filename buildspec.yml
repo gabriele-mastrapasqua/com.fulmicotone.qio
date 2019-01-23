@@ -1,0 +1,16 @@
+version: 0.2
+
+
+phases:
+  install:
+    commands:
+      - chmod 777 ./gradlew
+  build:
+    commands:
+      - ./gradlew clean build
+      - ./gradlew clean publish
+artifacts:
+  files:
+    - buildspec.yml
+  discard-paths: yes
+

@@ -1,0 +1,43 @@
+group 'com.fulmicotone'
+version '0.0.1'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+
+sourceCompatibility = 1.8
+
+
+test {
+    systemProperties['co.paralleluniverse.fibers.verifyInstrumentation'] = 'false'
+    systemProperties['co.paralleluniverse.debugMode'] = 'false'
+
+    jvmArgs "-javaagent:quasar-core-0.7.10.jar"
+    systemProperties System.getProperties()
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.opensourceagility.com/release" }
+    maven { url "http://repo.spring.io/libs-milestone" }
+    maven { url "http://repo.spring.io/libs-snapshot" }
+    maven { url "https://jitpack.io" }
+    maven { url 'http://dynamodb-local.s3-website-us-west-2.amazonaws.com/release' }
+}
+
+dependencies {
+    testCompile  "org.springframework.boot:spring-boot-starter-test:1.5.7.RELEASE"
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    compile group: 'co.paralleluniverse', name: 'quasar-core', version: '0.7.10'
+    compile group: 'com.google.guava', name: 'guava', version: '23.0'
+    compile group: 'com.netflix.servo', name: 'servo-aws', version: '0.12.16'
+}
