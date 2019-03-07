@@ -1,20 +1,26 @@
 package com.fulmicotone.qio.models;
 
-import com.fulmicotone.qio.components.metrics.QueueSizeMetric;
+import com.fulmicotone.qio.components.metrics.types.MetricInputQueueSize;
 
 import java.util.Optional;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.LinkedTransferQueue;
 
-public class QueueIOQ<E> extends LinkedTransferQueue<E> {
+public class QueueIOQ<E> extends LinkedBlockingQueue<E> {
 
 
-    private QueueSizeMetric metric;
+    private MetricInputQueueSize metric;
 
     public QueueIOQ(){
+        super();
+    }
+
+    public QueueIOQ(int capacity){
+        super(capacity);
     }
 
     public QueueIOQ(QueueIOService<E> queueIOService){
-        metric = new QueueSizeMetric(queueIOService.getUniqueKey());
+        metric = new MetricInputQueueSize(queueIOService.getUniqueKey());
     }
 
     public void registerMetric(String nameSpace){

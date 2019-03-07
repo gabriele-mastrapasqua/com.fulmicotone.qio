@@ -1,4 +1,4 @@
-package com.fulmicotone.qio.components.metrics;
+package com.fulmicotone.qio.components.metrics.generics;
 
 import com.fulmicotone.qio.components.metrics.interfaces.IMetric;
 import com.netflix.servo.annotations.DataSourceLevel;

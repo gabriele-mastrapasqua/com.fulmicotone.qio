@@ -4,6 +4,7 @@ package com.fulmicotone.qio.factories;
 import com.fulmicotone.qio.interfaces.IQueueIOService;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TransferQueue;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class QueueIOServiceFactory {
 
         getMapSet(obj.getClass())
                 .ifPresent(l -> l.forEach(queue -> {
-                    TransferQueue<E> q = (TransferQueue<E>) queue;
+                    BlockingQueue<E> q = (BlockingQueue<E>) queue;
                     q.add(obj);
                 }));
     }
@@ -35,12 +36,12 @@ public class QueueIOServiceFactory {
 
         getMapSet(obj.getClass())
                 .ifPresent(l -> l.forEach(queue -> {
-                    TransferQueue<E> q = (TransferQueue<E>) queue;
+                    BlockingQueue<E> q = (BlockingQueue<E>) queue;
                     q.addAll(obj);
                 }));
     }
 
-    private Optional<Set<TransferQueue<?>>> getMapSet(Class clazz)
+    private Optional<Set<BlockingQueue<?>>> getMapSet(Class clazz)
     {
         Set<IQueueIOService<?>> services = serviceMap.get(clazz);
 

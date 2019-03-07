@@ -1,24 +1,20 @@
-package com.fulmicotone.qio.components.metrics;
+package com.fulmicotone.qio.components.metrics.types;
 
+import com.fulmicotone.qio.components.metrics.generics.GenericMetric;
 import com.netflix.servo.annotations.DataSourceLevel;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ElementsReceivedMetric extends GenericMetric<Long> {
+public class MetricReceivedElements extends GenericMetric<Long> {
 
     @Monitor(name = "PLACEHOLDER", type = DataSourceType.COUNTER, description = "Received object", level = DataSourceLevel.INFO)
     private final AtomicLong producedObject = new AtomicLong();
 
 
-    public ElementsReceivedMetric(String name) {
+    public MetricReceivedElements(String name) {
         super(name+"-received-objects", DataSourceType.COUNTER, "Received object", DataSourceLevel.INFO);
-    }
-
-    @Override
-    public String logMetric() {
-        return "received "+producedObject.get()+" elements";
     }
 
     @Override

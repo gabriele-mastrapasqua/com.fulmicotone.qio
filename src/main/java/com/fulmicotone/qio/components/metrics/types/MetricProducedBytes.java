@@ -1,24 +1,20 @@
-package com.fulmicotone.qio.components.metrics;
+package com.fulmicotone.qio.components.metrics.types;
 
+import com.fulmicotone.qio.components.metrics.generics.GenericMetric;
 import com.netflix.servo.annotations.DataSourceLevel;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class BytesProducedMetric extends GenericMetric<Long> {
+public class MetricProducedBytes extends GenericMetric<Long> {
 
     @Monitor(name = "PLACEHOLDER", type = DataSourceType.COUNTER, description = "Produced bytes", level = DataSourceLevel.INFO)
     private final AtomicLong producedBytes = new AtomicLong();
 
 
-    public BytesProducedMetric(String name) {
+    public MetricProducedBytes(String name) {
         super(name+"-produced-bytes", DataSourceType.COUNTER, "Produced bytes", DataSourceLevel.INFO);
-    }
-
-    @Override
-    public String logMetric() {
-        return "produced "+ producedBytes.get()+" bytes";
     }
 
     @Override

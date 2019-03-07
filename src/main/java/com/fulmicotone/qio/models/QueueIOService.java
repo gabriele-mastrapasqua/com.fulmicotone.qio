@@ -4,6 +4,7 @@ package com.fulmicotone.qio.models;
 
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulator;
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorFactory;
+import com.fulmicotone.qio.components.metrics.QueueIOMetric;
 import com.fulmicotone.qio.factories.QueueIOExecutorFactory;
 import com.fulmicotone.qio.interfaces.IQueueIOExecutor;
 import com.fulmicotone.qio.interfaces.IQueueIOExecutorTask;
@@ -14,8 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TransferQueue;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -23,34 +25,56 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private QueueIOQ<E> inputQueue;
-    private OutputQueues outputQueues;
     private Class<E> clazz;
 
+
+    private QueueIOQ<E> inputQueue;
+    private OutputQueues outputQueues;
     private IQueueIOExecutor multiThreadExecutor;
     private IQueueIOExecutor singleExecutor;
-
-    private boolean useQuasar;
     private Map<Integer, QueueIOQ<E>> internalQueues = new HashMap<>();
+
+    private QueueIOMetric queueIOMetric;
     private int internalQueueThreadCreationIndex = 0;
     private int maxInternalThreads;
+    private int internalThreadQueueSize;
     private int chunkSize = 100;
     private int flushTimeout = 30;
     private TimeUnit flushTimeUnit = TimeUnit.SECONDS;
+    private boolean useQuasar;
     private boolean sizeBatchingEnabled = false;
     private boolean byteBatchingEnabled = false;
     private IQueueIOAccumulatorFactory<E> accumulatorFactory;
 
 
-    public QueueIOService(Class<E> clazz, OutputQueues outputQueues)
+    // METRICS
+
+
+
+    public QueueIOService(Class<E> clazz, Integer threadSize, OutputQueues outputQueues)
+    {
+        this(clazz, threadSize, 100_000_000, outputQueues);
+    }
+
+    public QueueIOService(Class<E> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues)
     {
         this.clazz = clazz;
         this.inputQueue = new QueueIOQ<>();
         this.outputQueues = outputQueues;
+        this.queueIOMetric = new QueueIOMetric(this);
+        this.maxInternalThreads = threadSize;
+        this.internalThreadQueueSize = internalThreadQueueSize;
     }
+
+
 
     public <I extends QueueIOService<E>> I withQuasar(boolean withQuasar){
         this.useQuasar = withQuasar;
+        return (I)this;
+    }
+
+    public <I extends QueueIOService<E>> I withQueueIOMetric(QueueIOMetric metric){
+        this.queueIOMetric = metric;
         return (I)this;
     }
 
@@ -71,7 +95,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
     @Override
-    public TransferQueue<E> getInputQueue() {
+    public QueueIOQ<E> getInputQueue() {
         return inputQueue;
     }
 
@@ -89,7 +113,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     {
 
         IntStream.range(0, maxThreads).forEach(i -> {
-            TransferQueue<E> queue = internalQueues.get(getNextQueueToBindIndex());
+            QueueIOQ<E> queue = internalQueues.get(getNextQueueToBindIndex());
             if(sizeBatchingEnabled){
                 multiThreadExecutor.exec(buildInternalReceiverTaskSizeBatching(queue, ingestionTask(), chunkSize, flushTimeout, flushTimeUnit));
             }else if(byteBatchingEnabled){
@@ -128,19 +152,13 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
 
-    public void startConsuming(Integer consumingThreads)
+
+    public void startConsuming()
     {
-        startConsuming(consumingThreads, 1_000_000);
-    }
+        this.multiThreadExecutor = initMultiThreadExecutor(maxInternalThreads, internalThreadQueueSize);
 
-    public void startConsuming(Integer consumingThreads, Integer threadQueueSize)
-    {
-        this.multiThreadExecutor = initMultiThreadExecutor(consumingThreads, threadQueueSize);
-
-        maxInternalThreads = consumingThreads;
-
-        initInternalQueues(consumingThreads);
-        initNewConsumerThread(consumingThreads);
+        initInternalQueues(maxInternalThreads);
+        initNewConsumerThread(maxInternalThreads);
 
         singleExecutor = initSingleThreadExecutor();
         singleExecutor.exec(buildMainTask());
@@ -167,7 +185,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
         };
     }
 
-    private IQueueIOExecutorTask buildInternalReceiverTask(TransferQueue<E> queue, IQueueIOIngestionTask<E> ingestionTask)
+    private IQueueIOExecutorTask buildInternalReceiverTask(BlockingQueue<E> queue, IQueueIOIngestionTask<E> ingestionTask)
     {
         return () -> {
 
@@ -187,7 +205,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
 
-    private IQueueIOExecutorTask buildInternalReceiverTaskSizeBatching(TransferQueue<E> queue,
+    private IQueueIOExecutorTask buildInternalReceiverTaskSizeBatching(BlockingQueue<E> queue,
                                                                          IQueueIOIngestionTask<E> ingestionTask,
                                                                          int chunkSize,
                                                                          int flushTimeout,
@@ -212,7 +230,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
 
-    private IQueueIOExecutorTask buildInternalReceiverTaskByteBatching(TransferQueue<E> queue,
+    private IQueueIOExecutorTask buildInternalReceiverTaskByteBatching(BlockingQueue<E> queue,
                                                                          IQueueIOIngestionTask<E> ingestionTask,
                                                                          IQueueIOAccumulatorFactory<E> accumulatorFactory,
                                                                          int flushTimeout,
@@ -255,33 +273,35 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     }
 
 
-
-
-
+    @Override
+    public int getInternalThreads() {
+        return maxInternalThreads;
+    }
 
     @Override
     public <I1> void producedObjectNotification(I1 object) {
-
+        queueIOMetric.getMetricProducedElements().incrementValue();
     }
 
     @Override
     public <I1> void producedObjectsNotification(List<I1> object) {
+        queueIOMetric.getMetricProducedElements().incrementValue(object.size());
 
     }
 
     @Override
     public void receivedObjectNotification(E object) {
-
+        queueIOMetric.getMetricReceivedElements().incrementValue();
     }
 
     @Override
     public void producedBytesNotification(byte[] object) {
-
+        queueIOMetric.getMetricProducedBytes().setValue((long) object.length);
     }
 
     @Override
     public void receivedBytesNotification(byte[] object) {
-
+        queueIOMetric.getMetricReceivedBytes().setValue((long) object.length);
     }
 
     @Override
@@ -295,6 +315,23 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
         producedObjectsNotification(elms);
         outputQueues.pushAllInQueue(clazz, elms);
     }
+
+    @Override
+    public void updateMetrics() {
+        queueIOMetric.setMetricExecutorQueueSize(multiThreadExecutor.getQueue());
+        queueIOMetric.setMetricInputQueueSizeValue(singleExecutor.getQueue());
+        queueIOMetric.setMetricInternalQueueSize(internalQueues
+                .entrySet()
+                .stream()
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList()));
+    }
+
+    @Override
+    public void registerMetrics(String appNamespace) {
+        queueIOMetric.registerMetrics(appNamespace);
+    }
+
     @Override
     public void flush() {
         log.info("flush called!");

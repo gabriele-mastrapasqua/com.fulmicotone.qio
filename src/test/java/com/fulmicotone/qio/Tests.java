@@ -15,33 +15,7 @@ import java.util.concurrent.TransferQueue;
 import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
-public class Tests {
-
-
-    private static final long MEGABYTE = 1024L * 1024L;
-
-
-    public static long bytesToMegabytes(long bytes) {
-        return bytes / MEGABYTE;
-    }
-
-    private List<String> strings(int max)
-    {
-        List<String> arrayList = new ArrayList<>();
-        for(int i = 0; i<max; i++){
-            arrayList.add("String"+i);
-        }
-        return arrayList;
-    }
-
-    private List<String> tenByteStrings(int max)
-    {
-        List<String> arrayList = new ArrayList<>();
-        for(int i = 0; i<max; i++){
-            arrayList.add("0123456789");
-        }
-        return arrayList;
-    }
+public class Tests extends TestUtils{
 
 
 
@@ -58,12 +32,12 @@ public class Tests {
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, new OutputQueues().withQueue(String.class, outputQueue));
-        stringQueueIO.startConsuming(threadSize, 100_000);
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000, new OutputQueues().withQueue(String.class, outputQueue));
+        stringQueueIO.startConsuming();
 
 
         long ms = System.currentTimeMillis();
-        strings(elements).forEach(s -> {
+        stringsGenerator(elements).forEach(s -> {
             try {
                 stringQueueIO.getInputQueue().put(s);
             } catch (InterruptedException e) {
@@ -118,13 +92,13 @@ public class Tests {
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
                 .withQuasar(true);
-        stringQueueIO.startConsuming(threadSize, 100_000);
+        stringQueueIO.startConsuming();
 
 
         long ms = System.currentTimeMillis();
-        strings(elements).forEach(s -> {
+        stringsGenerator(elements).forEach(s -> {
             try {
                 stringQueueIO.getInputQueue().put(s);
             } catch (InterruptedException e) {
@@ -184,12 +158,12 @@ public class Tests {
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
                 .withSizeBatchingPerConsumerThread(batchSize, flushSeconds, timeUnit);
-        stringQueueIO.startConsuming(threadSize, 100_000);
+        stringQueueIO.startConsuming();
 
 
-        strings(elements).forEach(s -> {
+        stringsGenerator(elements).forEach(s -> {
             try {
                 stringQueueIO.getInputQueue().put(s);
             } catch (InterruptedException e) {
@@ -234,13 +208,13 @@ public class Tests {
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
                 .withSizeBatchingPerConsumerThread(batchSize, flushSeconds, timeUnit);
-        stringQueueIO.startConsuming(threadSize, 100_000);
+        stringQueueIO.startConsuming();
 
 
         long ms = System.currentTimeMillis();
-        strings(elements).forEach(s -> {
+        stringsGenerator(elements).forEach(s -> {
             try {
                 stringQueueIO.getInputQueue().put(s);
             } catch (InterruptedException e) {
@@ -293,9 +267,9 @@ public class Tests {
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
                 .withByteBatchingPerConsumerThread(tenKAccumulatorFactory, flushSeconds, timeUnit);
-        stringQueueIO.startConsuming(threadSize, 100_000);
+        stringQueueIO.startConsuming();
 
 
         long deadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
@@ -341,9 +315,9 @@ public class Tests {
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
                 .withByteBatchingPerConsumerThread(tenKAccumulatorFactory, flushSeconds, timeUnit);
-        stringQueueIO.startConsuming(threadSize, 100_000);
+        stringQueueIO.startConsuming();
 
 
         long realDeadline = System.currentTimeMillis()+((flushSeconds)*1000)-100;

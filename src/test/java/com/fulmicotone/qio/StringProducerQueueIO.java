@@ -11,8 +11,12 @@ import java.util.List;
 public class StringProducerQueueIO extends QueueIOService<String> {
 
 
-    public StringProducerQueueIO(Class<String> clazz, OutputQueues outputQueues) {
-        super(clazz, outputQueues);
+    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, outputQueues);
+    }
+
+    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, internalThreadQueueSize, outputQueues);
     }
 
     @Override

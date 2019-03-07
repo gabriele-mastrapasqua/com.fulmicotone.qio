@@ -1,11 +1,13 @@
 package com.fulmicotone.qio.interfaces;
 
+import com.fulmicotone.qio.models.QueueIOQ;
+
 import java.util.List;
-import java.util.concurrent.TransferQueue;
 
 public interface IQueueIOService<I> {
 
-    TransferQueue<I> getInputQueue();
+    QueueIOQ<I> getInputQueue();
+    int getInternalThreads();
     Class<I> getInputClass();
     String getUniqueKey();
 
@@ -23,6 +25,8 @@ public interface IQueueIOService<I> {
     <E>void produce(E elm, Class<E> clazz);
     <E>void produceAll(List<E> elm, Class<E> clazz);
 
+    void updateMetrics();
+    void registerMetrics(String appNamespace);
     void flush();
     void onDestroy();
 }
