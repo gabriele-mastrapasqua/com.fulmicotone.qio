@@ -13,8 +13,13 @@ import java.util.stream.Collectors;
 
 public class DomainCountQIO extends QueueIOService<PageView> {
 
-    public DomainCountQIO(Class<PageView> clazz, OutputQueues outputQueues) {
-        super(clazz, outputQueues);
+
+    public DomainCountQIO(Class<PageView> clazz, Integer threadSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, outputQueues);
+    }
+
+    public DomainCountQIO(Class<PageView> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, internalThreadQueueSize, outputQueues);
     }
 
     @Override

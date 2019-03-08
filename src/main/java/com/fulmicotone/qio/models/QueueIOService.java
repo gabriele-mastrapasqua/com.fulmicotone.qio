@@ -37,7 +37,8 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     private QueueIOMetric queueIOMetric;
     private int internalQueueThreadCreationIndex = 0;
     private int maxInternalThreads;
-    private int internalThreadQueueSize;
+    private int internalQueuesMaxSize = 10_000_000;
+    private int multiThreadQueueSize;
     private int chunkSize = 100;
     private int flushTimeout = 30;
     private TimeUnit flushTimeUnit = TimeUnit.SECONDS;
@@ -56,14 +57,14 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
         this(clazz, threadSize, 100_000_000, outputQueues);
     }
 
-    public QueueIOService(Class<E> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues)
+    public QueueIOService(Class<E> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues)
     {
         this.clazz = clazz;
         this.inputQueue = new QueueIOQ<>();
         this.outputQueues = outputQueues;
-        this.queueIOMetric = new QueueIOMetric(this);
         this.maxInternalThreads = threadSize;
-        this.internalThreadQueueSize = internalThreadQueueSize;
+        this.multiThreadQueueSize = multiThreadQueueSize;
+        this.queueIOMetric = new QueueIOMetric(this);
     }
 
 
@@ -75,6 +76,11 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
 
     public <I extends QueueIOService<E>> I withQueueIOMetric(QueueIOMetric metric){
         this.queueIOMetric = metric;
+        return (I)this;
+    }
+
+    public <I extends QueueIOService<E>> I withInternalQueuesMaxSize(int internalQueuesMaxSize){
+        this.internalQueuesMaxSize = internalQueuesMaxSize;
         return (I)this;
     }
 
@@ -148,14 +154,14 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
 
     private void initInternalQueues(Integer consumingThreads)
     {
-        IntStream.range(0, consumingThreads).forEach(i -> internalQueues.put(i, new QueueIOQ<>()));
+        IntStream.range(0, consumingThreads).forEach(i -> internalQueues.put(i, new QueueIOQ<>(internalQueuesMaxSize)));
     }
 
 
 
     public void startConsuming()
     {
-        this.multiThreadExecutor = initMultiThreadExecutor(maxInternalThreads, internalThreadQueueSize);
+        this.multiThreadExecutor = initMultiThreadExecutor(maxInternalThreads, multiThreadQueueSize);
 
         initInternalQueues(maxInternalThreads);
         initNewConsumerThread(maxInternalThreads);
@@ -320,7 +326,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     public void updateMetrics() {
         queueIOMetric.setMetricExecutorQueueSize(multiThreadExecutor.getQueue());
         queueIOMetric.setMetricInputQueueSizeValue(singleExecutor.getQueue());
-        queueIOMetric.setMetricInternalQueueSize(internalQueues
+        queueIOMetric.setMetricInternalQueuesAVGSize(internalQueues
                 .entrySet()
                 .stream()
                 .map(Map.Entry::getValue)

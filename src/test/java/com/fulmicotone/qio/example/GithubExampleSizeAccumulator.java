@@ -21,21 +21,21 @@ public class GithubExampleSizeAccumulator {
     {
 
         // INTENT STORER QIO - Will store the Intent objects to the database.
-        IntentStorerQIO intentStorerQIO = new IntentStorerQIO(Intent.class, null);
+        IntentStorerQIO intentStorerQIO = new IntentStorerQIO(Intent.class,2, null);
 
         // INTENT DISCOVER QIO - Output queue will be the IntentStorerQIO input queue
-        IntentDiscoverQIO intentDiscoverQIO = new IntentDiscoverQIO(PageView.class, new OutputQueues()
+        IntentDiscoverQIO intentDiscoverQIO = new IntentDiscoverQIO(PageView.class,4, new OutputQueues()
                 .withQueue(Intent.class, intentStorerQIO.getInputQueue()));
 
         // PAGEVIEW QIO - Output queue will be the DomainCount.class queue.
         // The service will group 5 ingested Pageviews before sending them to ingestionTask method
-        DomainCountQIO domainCountQIO = new DomainCountQIO(PageView.class, null)
+        DomainCountQIO domainCountQIO = new DomainCountQIO(PageView.class,2, null)
                 .withSizeBatchingPerConsumerThread(5, 5, TimeUnit.SECONDS);
 
 
-        intentStorerQIO.startConsuming(2);
-        domainCountQIO.startConsuming(2);
-        intentDiscoverQIO.startConsuming(4);
+        intentStorerQIO.startConsuming();
+        domainCountQIO.startConsuming();
+        intentDiscoverQIO.startConsuming();
 
 
 

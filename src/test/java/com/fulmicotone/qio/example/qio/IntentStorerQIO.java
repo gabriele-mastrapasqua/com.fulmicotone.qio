@@ -13,8 +13,13 @@ import java.util.stream.Collectors;
 
 public class IntentStorerQIO extends QueueIOService<Intent> {
 
-    public IntentStorerQIO(Class<Intent> clazz, OutputQueues outputQueues) {
-        super(clazz, outputQueues);
+
+    public IntentStorerQIO(Class<Intent> clazz, Integer threadSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, outputQueues);
+    }
+
+    public IntentStorerQIO(Class<Intent> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, internalThreadQueueSize, outputQueues);
     }
 
     @Override

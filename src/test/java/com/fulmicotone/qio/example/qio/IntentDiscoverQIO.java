@@ -13,8 +13,13 @@ import java.util.stream.Collectors;
 
 public class IntentDiscoverQIO extends QueueIOService<PageView> {
 
-    public IntentDiscoverQIO(Class<PageView> clazz, OutputQueues outputQueues) {
-        super(clazz, outputQueues);
+
+    public IntentDiscoverQIO(Class<PageView> clazz, Integer threadSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, outputQueues);
+    }
+
+    public IntentDiscoverQIO(Class<PageView> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues) {
+        super(clazz, threadSize, internalThreadQueueSize, outputQueues);
     }
 
     @Override

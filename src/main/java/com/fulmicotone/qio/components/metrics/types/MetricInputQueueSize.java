@@ -18,7 +18,8 @@ public class MetricInputQueueSize extends GenericMetric<Integer> {
 
     @Override
     public Integer getValue() {
-        return null;
+        return queueSize.intValue();
+
     }
 
     @Override
@@ -33,7 +34,7 @@ public class MetricInputQueueSize extends GenericMetric<Integer> {
 
     @Override
     public void incrementValue(Integer delta) {
-
+        queueSize.getAndAdd(delta);
     }
 
 }
