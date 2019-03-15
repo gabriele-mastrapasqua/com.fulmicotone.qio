@@ -7,8 +7,7 @@ import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.models.QueueIOService;
-import com.fulmicotone.qio.utils.kinesis.firehose.enums.FirehosePutRecords;
-import com.fulmicotone.qio.utils.kinesis.firehose.interfaces.IFirehoseMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.enums.PutRecordMode;
 import com.fulmicotone.qio.utils.kinesis.firehose.models.FirehoseWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +15,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FirehoseQIOService<I,O> extends QueueIOService<FirehoseWrapper<I>> {
+public class FirehoseQIOService<I,T> extends QueueIOService<FirehoseWrapper<I>> {
 
     final Logger log = LoggerFactory.getLogger(this.getClass());
-    private IFirehoseMapper<I, O> mapper;
     private String streamName;
-    private FirehosePutRecords putRecords;
+    private PutRecordMode putRecordMode;
     private AmazonKinesisFirehoseClient amazonKinesisFirehoseClient;
     private boolean logRequests = false;
 
@@ -51,7 +49,7 @@ public class FirehoseQIOService<I,O> extends QueueIOService<FirehoseWrapper<I>> 
     private void sendRecords(List<Record> list) {
 
 
-        switch (putRecords)
+        switch (putRecordMode)
         {
             case SINGLE: {
                 list.forEach(this::putRecord);
