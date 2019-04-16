@@ -23,6 +23,11 @@ public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
     private AmazonKinesisFirehoseClient amazonKinesisFirehoseClient;
     private boolean logRequests = false;
 
+
+    public FirehoseQIOService(Class<I> clazz, Integer threadSize) {
+        super(clazz, threadSize, null, null);
+    }
+
     public FirehoseQIOService(Class<I> clazz, Integer threadSize, OutputQueues outputQueues, IQueueIOTransform<I, Record> transformFunction) {
         super(clazz, threadSize, outputQueues, transformFunction);
     }

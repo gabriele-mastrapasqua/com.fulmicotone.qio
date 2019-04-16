@@ -39,8 +39,10 @@ dependencies {
     testCompile  "org.springframework.boot:spring-boot-starter-test:1.5.7.RELEASE"
     testCompile group: 'com.amazonaws', name: 'aws-java-sdk-cloudwatch', version: '1.11.513'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-kinesis', version: '1.11.534'
+    compile group: 'com.amazonaws', name: 'amazon-kinesis-producer', version: '0.12.11'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     compile group: 'co.paralleluniverse', name: 'quasar-core', version: '0.7.10'
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
     compile group: 'com.netflix.servo', name: 'servo-aws', version: '0.12.16'
+    compile "com.evanlennick:retry4j:0.15.0"
 }

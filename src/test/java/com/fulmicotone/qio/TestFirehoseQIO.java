@@ -41,6 +41,10 @@ public class TestFirehoseQIO extends TestUtils{
         BiConsumer<Record, String> putRecordCallback;
         BiConsumer<List<Record>, String> putRecordBatchCallback;
 
+        public FirehoseQIOServiceTest(Class<String> clazz, Integer threadSize) {
+            super(clazz, threadSize);
+        }
+
         public FirehoseQIOServiceTest(Class<String> clazz, Integer threadSize, OutputQueues outputQueues, IQueueIOTransform<String, Record> transformFunction) {
             super(clazz, threadSize, outputQueues, transformFunction);
         }
@@ -82,7 +86,7 @@ public class TestFirehoseQIO extends TestUtils{
 
 
         // BOOSTRAP SERVICE
-        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2, null, null)
+        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2)
                 .withStreamNames(streamNames)
                 .withPutRecordMode(putRecordMode)
                 .withByteBatchingPerConsumerThread(factory, 10, TimeUnit.SECONDS);
@@ -143,7 +147,7 @@ public class TestFirehoseQIO extends TestUtils{
 
 
         // BOOSTRAP SERVICE
-        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2, null, null)
+        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2)
                 .withStreamNames(streamNames)
                 .withPutRecordMode(putRecordMode)
                 .withByteBatchingPerConsumerThread(factory, 10, TimeUnit.SECONDS);
@@ -204,7 +208,7 @@ public class TestFirehoseQIO extends TestUtils{
 
 
         // BOOSTRAP SERVICE
-        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2, null, null)
+        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2)
                 .withStreamNames(streamNames)
                 .withPutRecordMode(putRecordMode)
                 .withByteBatchingPerConsumerThread(factory, 10, TimeUnit.SECONDS);
@@ -265,7 +269,7 @@ public class TestFirehoseQIO extends TestUtils{
 
 
         // BOOSTRAP SERVICE
-        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2, null, null)
+        FirehoseQIOServiceTest firehoseQIOService = new FirehoseQIOServiceTest(String.class, 2)
                 .withStreamNames(streamNames)
                 .withPutRecordMode(putRecordMode)
                 .withByteBatchingPerConsumerThread(factory, 10, TimeUnit.SECONDS);
