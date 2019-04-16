@@ -20,14 +20,14 @@ public class GithubExample {
     {
 
         // INTENT STORER QIO - Will store the Intent objects to the database.
-        IntentStorerQIO intentStorerQIO = new IntentStorerQIO(Intent.class,2, null);
+        IntentStorerQIO intentStorerQIO = new IntentStorerQIO(Intent.class,2, null, t -> t);
 
         // INTENT DISCOVER QIO - Output queue will be the IntentStorerQIO input queue
         IntentDiscoverQIO intentDiscoverQIO = new IntentDiscoverQIO(PageView.class,3, new OutputQueues()
-                .withQueue(Intent.class, intentStorerQIO.getInputQueue()));
+                .withQueue(Intent.class, intentStorerQIO.getInputQueue()), t -> t);
 
         // PAGEVIEW QIO - No output queues, just printing
-        DomainCountQIO domainCountQIO = new DomainCountQIO(PageView.class,2, null);
+        DomainCountQIO domainCountQIO = new DomainCountQIO(PageView.class,2, null, t -> t);
 
 
         intentStorerQIO.startConsuming(); // 2 THREADS

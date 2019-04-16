@@ -6,10 +6,7 @@ import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulator;
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorFactory;
 import com.fulmicotone.qio.components.metrics.QueueIOMetric;
 import com.fulmicotone.qio.factories.QueueIOExecutorFactory;
-import com.fulmicotone.qio.interfaces.IQueueIOExecutor;
-import com.fulmicotone.qio.interfaces.IQueueIOExecutorTask;
-import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
-import com.fulmicotone.qio.interfaces.IQueueIOService;
+import com.fulmicotone.qio.interfaces.*;
 import com.google.common.collect.Queues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
-public abstract class QueueIOService<E> implements IQueueIOService<E> {
+public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -45,22 +42,24 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
     private boolean useQuasar;
     private boolean sizeBatchingEnabled = false;
     private boolean byteBatchingEnabled = false;
-    private IQueueIOAccumulatorFactory<E> accumulatorFactory;
+    private IQueueIOAccumulatorFactory<E, T> accumulatorFactory;
+    private IQueueIOTransform<E, T> transformFunction;
 
 
     // METRICS
 
 
 
-    public QueueIOService(Class<E> clazz, Integer threadSize, OutputQueues outputQueues)
+    public QueueIOService(Class<E> clazz, Integer threadSize, OutputQueues outputQueues, IQueueIOTransform<E, T> transformFunction)
     {
-        this(clazz, threadSize, 100_000_000, outputQueues);
+        this(clazz, threadSize, 100_000_000, outputQueues, transformFunction);
     }
 
-    public QueueIOService(Class<E> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues)
+    public QueueIOService(Class<E> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues, IQueueIOTransform<E, T> transformFunction)
     {
         this.clazz = clazz;
         this.inputQueue = new QueueIOQ<>();
+        this.transformFunction = transformFunction;
         this.outputQueues = outputQueues;
         this.maxInternalThreads = threadSize;
         this.multiThreadQueueSize = multiThreadQueueSize;
@@ -69,22 +68,22 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
 
 
 
-    public <I extends QueueIOService<E>> I withQuasar(boolean withQuasar){
+    public <I extends QueueIOService<E, T>> I withQuasar(boolean withQuasar){
         this.useQuasar = withQuasar;
         return (I)this;
     }
 
-    public <I extends QueueIOService<E>> I withQueueIOMetric(QueueIOMetric metric){
+    public <I extends QueueIOService<E, T>> I withQueueIOMetric(QueueIOMetric metric){
         this.queueIOMetric = metric;
         return (I)this;
     }
 
-    public <I extends QueueIOService<E>> I withInternalQueuesMaxSize(int internalQueuesMaxSize){
+    public <I extends QueueIOService<E, T>> I withInternalQueuesMaxSize(int internalQueuesMaxSize){
         this.internalQueuesMaxSize = internalQueuesMaxSize;
         return (I)this;
     }
 
-    public <I extends QueueIOService<E>> I withSizeBatchingPerConsumerThread(int chunkSize, int flushTimeout, TimeUnit flushTimeUnit){
+    public <I extends QueueIOService<E, T>> I withSizeBatchingPerConsumerThread(int chunkSize, int flushTimeout, TimeUnit flushTimeUnit){
         sizeBatchingEnabled = true;
         this.chunkSize = chunkSize;
         this.flushTimeout = flushTimeout;
@@ -92,7 +91,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
         return (I)this;
     }
 
-    public <I extends QueueIOService<E>> I withByteBatchingPerConsumerThread(IQueueIOAccumulatorFactory<E> accumulatorFactory, int flushTimeout, TimeUnit flushTimeUnit){
+    public <I extends QueueIOService<E, T>> I withByteBatchingPerConsumerThread(IQueueIOAccumulatorFactory<E, T> accumulatorFactory, int flushTimeout, TimeUnit flushTimeUnit){
         byteBatchingEnabled = true;
         this.accumulatorFactory = accumulatorFactory;
         this.flushTimeout = flushTimeout;
@@ -191,7 +190,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
         };
     }
 
-    private IQueueIOExecutorTask buildInternalReceiverTask(BlockingQueue<E> queue, IQueueIOIngestionTask<E> ingestionTask)
+    private IQueueIOExecutorTask buildInternalReceiverTask(BlockingQueue<E> queue, IQueueIOIngestionTask<T> ingestionTask)
     {
         return () -> {
 
@@ -200,7 +199,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
                 try
                 {
                     E elm = queue.take();
-                    ingestionTask.ingest(Collections.singletonList(elm));
+                    ingestionTask.ingest(Collections.singletonList(transformFunction.apply(elm)));
                 }
                 catch(Exception ex) {
                     log.error("buildInternalReceiverTask error {}", ex.toString());
@@ -212,7 +211,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
 
 
     private IQueueIOExecutorTask buildInternalReceiverTaskSizeBatching(BlockingQueue<E> queue,
-                                                                         IQueueIOIngestionTask<E> ingestionTask,
+                                                                         IQueueIOIngestionTask<T> ingestionTask,
                                                                          int chunkSize,
                                                                          int flushTimeout,
                                                                          TimeUnit flushTimeUnit)
@@ -225,7 +224,7 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
                 {
                     List<E> collection = new ArrayList<>();
                     Queues.drain(queue, collection, chunkSize, flushTimeout, flushTimeUnit);
-                    ingestionTask.ingest(collection);
+                    ingestionTask.ingest(collection.stream().map(transformFunction).collect(Collectors.toList()));
                 }
                 catch(Exception ex) {
                     log.error("buildInternalReceiverTaskSizeBatching error {}", ex.toString());
@@ -237,14 +236,14 @@ public abstract class QueueIOService<E> implements IQueueIOService<E> {
 
 
     private IQueueIOExecutorTask buildInternalReceiverTaskByteBatching(BlockingQueue<E> queue,
-                                                                         IQueueIOIngestionTask<E> ingestionTask,
-                                                                         IQueueIOAccumulatorFactory<E> accumulatorFactory,
+                                                                         IQueueIOIngestionTask<T> ingestionTask,
+                                                                         IQueueIOAccumulatorFactory<E, T> accumulatorFactory,
                                                                          int flushTimeout,
                                                                          TimeUnit flushTimeUnit)
     {
         return () -> {
 
-            IQueueIOAccumulator<E> accumulator = accumulatorFactory.build();
+            IQueueIOAccumulator<E, T> accumulator = accumulatorFactory.build();
 
             while (!Thread.currentThread().isInterrupted())
             {

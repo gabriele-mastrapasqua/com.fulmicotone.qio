@@ -1,6 +1,7 @@
 package com.fulmicotone.qio;
 
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
+import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.models.QueueIOService;
 import org.slf4j.Logger;
@@ -8,15 +9,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class StringProducerQueueIO extends QueueIOService<String> {
+public class StringProducerQueueIO extends QueueIOService<String, String> {
 
 
-    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, OutputQueues outputQueues) {
-        super(clazz, threadSize, outputQueues);
+    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, OutputQueues outputQueues, IQueueIOTransform<String, String> transformFunction) {
+        super(clazz, threadSize, outputQueues, transformFunction);
     }
 
-    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues) {
-        super(clazz, threadSize, internalThreadQueueSize, outputQueues);
+    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues, IQueueIOTransform<String, String> transformFunction) {
+        super(clazz, threadSize, multiThreadQueueSize, outputQueues, transformFunction);
     }
 
     @Override

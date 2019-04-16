@@ -4,7 +4,9 @@ import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorLengthFunct
 import com.fulmicotone.qio.components.accumulator.QueueIOAccumulator;
 import com.fulmicotone.qio.example.models.PageView;
 
-public class PageViewCSVAccumulator extends QueueIOAccumulator<PageView> {
+import java.util.List;
+
+public class PageViewCSVAccumulator extends QueueIOAccumulator<PageView, PageView> {
 
 
     public PageViewCSVAccumulator(double byteSizeLimit) {
@@ -12,7 +14,12 @@ public class PageViewCSVAccumulator extends QueueIOAccumulator<PageView> {
     }
 
     @Override
+    public List<PageView> getRecords() {
+        return accumulator;
+    }
+
+    @Override
     public IQueueIOAccumulatorLengthFunction<PageView> accumulatorLengthFunction() {
-        return pageView -> (pageView.getUrl()+","+pageView.getUserId()).length();
+        return pageView -> (double)(pageView.getUrl()+","+pageView.getUserId()).length();
     }
 }

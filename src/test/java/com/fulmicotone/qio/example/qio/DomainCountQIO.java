@@ -4,6 +4,7 @@ import com.fulmicotone.qio.example.models.DomainCount;
 import com.fulmicotone.qio.example.models.PageView;
 import com.fulmicotone.qio.example.utils.DomainExtractor;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
+import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.models.QueueIOService;
 
@@ -11,15 +12,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class DomainCountQIO extends QueueIOService<PageView> {
+public class DomainCountQIO extends QueueIOService<PageView, PageView> {
 
 
-    public DomainCountQIO(Class<PageView> clazz, Integer threadSize, OutputQueues outputQueues) {
-        super(clazz, threadSize, outputQueues);
+    public DomainCountQIO(Class<PageView> clazz, Integer threadSize, OutputQueues outputQueues, IQueueIOTransform<PageView, PageView> transformFunction) {
+        super(clazz, threadSize, outputQueues, transformFunction);
     }
 
-    public DomainCountQIO(Class<PageView> clazz, Integer threadSize, Integer internalThreadQueueSize, OutputQueues outputQueues) {
-        super(clazz, threadSize, internalThreadQueueSize, outputQueues);
+    public DomainCountQIO(Class<PageView> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues, IQueueIOTransform<PageView, PageView> transformFunction) {
+        super(clazz, threadSize, multiThreadQueueSize, outputQueues, transformFunction);
     }
 
     @Override

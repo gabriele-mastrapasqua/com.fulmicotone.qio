@@ -1,7 +1,7 @@
 package com.fulmicotone.qio.components.accumulator;
 
-public interface IQueueIOAccumulatorFactory<I>  {
+public interface IQueueIOAccumulatorFactory<I, T>  {
 
 
-    IQueueIOAccumulator<I> build();
+    IQueueIOAccumulator<I, T> build();
 }

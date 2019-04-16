@@ -4,7 +4,8 @@ import com.fulmicotone.qio.models.QueueIOQ;
 
 import java.util.List;
 
-public interface IQueueIOService<I> {
+// Input type I and optional T as (T)ransformed
+public interface IQueueIOService<I, T> {
 
     QueueIOQ<I> getInputQueue();
     int getInternalThreads();
@@ -19,7 +20,7 @@ public interface IQueueIOService<I> {
     void receivedBytesNotification(byte[] object);
 
 
-    IQueueIOIngestionTask<I> ingestionTask();
+    IQueueIOIngestionTask<T> ingestionTask();
 
 
     <E>void produce(E elm, Class<E> clazz);

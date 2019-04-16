@@ -1,51 +1,62 @@
 package com.fulmicotone.qio.utils.kinesis.firehose.models;
 
-import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IByteMapper;
-import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IObjectMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseByteMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseRecordMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseStringMapper;
 
-public class FirehoseMapper<I, T> {
+public class FirehoseMapper<I> {
 
-    private IByteMapper<T> byteMapper;
-    private IObjectMapper<I, T> firehoseMapper;
+    private IFirehoseStringMapper<I> stringMapper;
+    private IFirehoseRecordMapper<I> recordMapper;
+    private IFirehoseByteMapper byteMapper;
 
-    private FirehoseMapper(Builder<I, T> builder) {
+    private FirehoseMapper(Builder builder) {
+        stringMapper = builder.stringMapper;
+        recordMapper = builder.recordMapper;
         byteMapper = builder.byteMapper;
-        firehoseMapper = builder.firehoseMapper;
     }
-
-
 
     public static Builder newBuilder() {
         return new Builder<>();
     }
 
-    public IByteMapper<T> getByteMapper() {
+    public IFirehoseStringMapper<I> getStringMapper() {
+        return stringMapper;
+    }
+
+    public IFirehoseRecordMapper<I> getRecordMapper() {
+        return recordMapper;
+    }
+
+    public IFirehoseByteMapper getByteMapper() {
         return byteMapper;
     }
 
-    public IObjectMapper<I, T> getFirehoseMapper() {
-        return firehoseMapper;
-    }
-
-    public static final class Builder<I, T> {
-        private IByteMapper<T> byteMapper;
-        private IObjectMapper<I, T> firehoseMapper;
+    public static final class Builder<I> {
+        private IFirehoseStringMapper<I> stringMapper;
+        private IFirehoseRecordMapper<I> recordMapper;
+        private IFirehoseByteMapper byteMapper;
 
         private Builder() {
         }
 
-        public Builder withByteMapper(IByteMapper<T> val) {
+        public Builder withStringMapper(IFirehoseStringMapper<I> val) {
+            stringMapper = val;
+            return this;
+        }
+
+        public Builder withRecordMapper(IFirehoseRecordMapper<I> val) {
+            recordMapper = val;
+            return this;
+        }
+
+        public Builder withByteMapper(IFirehoseByteMapper val) {
             byteMapper = val;
             return this;
         }
 
-        public Builder withFirehoseMapper(IObjectMapper<I, T> val) {
-            firehoseMapper = val;
-            return this;
-        }
-
         public FirehoseMapper build() {
-            return new FirehoseMapper<>(this);
+            return new FirehoseMapper(this);
         }
     }
 }

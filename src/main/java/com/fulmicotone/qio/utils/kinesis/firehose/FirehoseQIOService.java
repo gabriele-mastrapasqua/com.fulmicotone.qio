@@ -5,58 +5,59 @@ import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
+import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.models.QueueIOService;
 import com.fulmicotone.qio.utils.kinesis.firehose.enums.PutRecordMode;
-import com.fulmicotone.qio.utils.kinesis.firehose.models.FirehoseWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class FirehoseQIOService<I,T> extends QueueIOService<FirehoseWrapper<I>> {
+public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
 
     final Logger log = LoggerFactory.getLogger(this.getClass());
-    private String streamName;
-    private PutRecordMode putRecordMode;
+    private List<String> streamNames;
+    private PutRecordMode putRecordMode = PutRecordMode.BATCH;
     private AmazonKinesisFirehoseClient amazonKinesisFirehoseClient;
     private boolean logRequests = false;
 
-
-
-    public FirehoseQIOService(Class<FirehoseWrapper<I>> clazz, Integer threadSize, OutputQueues outputQueues) {
-        super(clazz, threadSize, outputQueues);
+    public FirehoseQIOService(Class<I> clazz, Integer threadSize, OutputQueues outputQueues, IQueueIOTransform<I, Record> transformFunction) {
+        super(clazz, threadSize, outputQueues, transformFunction);
     }
 
-    public FirehoseQIOService(Class<FirehoseWrapper<I>> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues) {
-        super(clazz, threadSize, multiThreadQueueSize, outputQueues);
+    public FirehoseQIOService(Class<I> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues, IQueueIOTransform<I, Record> transformFunction) {
+        super(clazz, threadSize, multiThreadQueueSize, outputQueues, transformFunction);
+    }
+
+    public FirehoseQIOService<I> withPutRecordMode(PutRecordMode putRecordMode){
+        this.putRecordMode = putRecordMode;
+        return this;
+    }
+
+    public FirehoseQIOService<I> withAmazonKinesisFirehoseClient(AmazonKinesisFirehoseClient amazonKinesisFirehoseClient){
+        this.amazonKinesisFirehoseClient = amazonKinesisFirehoseClient;
+        return this;
+    }
+
+    public FirehoseQIOService<I> withStreamNames(List<String> streamNames){
+        this.streamNames = streamNames;
+        return this;
     }
 
 
-    @Override
-    public IQueueIOIngestionTask<FirehoseWrapper<I>> ingestionTask() {
-        return list -> {
-
-            sendRecords(list.stream()
-                    .flatMap(w -> w.getTransformedRecords().stream())
-                    .collect(Collectors.toList()));
-
-            return null;
-        };
-    }
-
-    private void sendRecords(List<Record> list) {
+    private void sendRecords(List<Record> list, String streamName) {
 
 
         switch (putRecordMode)
         {
             case SINGLE: {
-                list.forEach(this::putRecord);
+                list.forEach(c -> putRecord(c, streamName));
                 break;
             }
             case BATCH:{
-                putRecordBatch(list);
+                putRecordBatch(list, streamName);
                 break;
             }
         }
@@ -64,7 +65,21 @@ public class FirehoseQIOService<I,T> extends QueueIOService<FirehoseWrapper<I>> 
     }
 
 
-    private void putRecord(Record record) {
+
+    @Override
+    public IQueueIOIngestionTask<Record> ingestionTask() {
+        return new FirehoseIngestionTask<Record>(new ArrayList<>(streamNames)) {
+
+            @Override
+            public Void ingest(List<Record> list) {
+                sendRecords(list, this.getStreamName());
+                return null;
+            }
+        };
+    }
+
+
+    protected void putRecord(Record record, String streamName) {
 
 
         try
@@ -88,7 +103,7 @@ public class FirehoseQIOService<I,T> extends QueueIOService<FirehoseWrapper<I>> 
 
     }
 
-    private void putRecordBatch(List<Record> list) {
+    protected void putRecordBatch(List<Record> list, String streamName) {
 
 
         try
@@ -96,7 +111,7 @@ public class FirehoseQIOService<I,T> extends QueueIOService<FirehoseWrapper<I>> 
 
             if(list.size() == 1)
             {
-                putRecord(list.get(0));
+                putRecord(list.get(0), streamName);
                 return;
             }
 

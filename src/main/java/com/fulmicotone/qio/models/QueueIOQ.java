@@ -19,7 +19,7 @@ public class QueueIOQ<E> extends LinkedBlockingQueue<E> {
         super(capacity);
     }
 
-    public QueueIOQ(QueueIOService<E> queueIOService){
+    public QueueIOQ(QueueIOService<E, ?> queueIOService){
         metric = new MetricInputQueueSize(queueIOService.getUniqueKey());
     }
 

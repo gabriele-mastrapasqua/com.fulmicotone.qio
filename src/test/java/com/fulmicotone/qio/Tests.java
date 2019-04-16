@@ -32,7 +32,7 @@ public class Tests extends TestUtils{
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000, new OutputQueues().withQueue(String.class, outputQueue));
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000, new OutputQueues().withQueue(String.class, outputQueue), t -> t);
         stringQueueIO.startConsuming();
 
 
@@ -92,7 +92,7 @@ public class Tests extends TestUtils{
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue), t -> t)
                 .withQuasar(true);
         stringQueueIO.startConsuming();
 
@@ -158,7 +158,11 @@ public class Tests extends TestUtils{
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class,
+                threadSize,
+                100_000,
+                new OutputQueues().withQueue(String.class, outputQueue),
+                t -> t)
                 .withSizeBatchingPerConsumerThread(batchSize, flushSeconds, timeUnit);
         stringQueueIO.startConsuming();
 
@@ -208,7 +212,7 @@ public class Tests extends TestUtils{
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue), t -> t)
                 .withSizeBatchingPerConsumerThread(batchSize, flushSeconds, timeUnit);
         stringQueueIO.startConsuming();
 
@@ -261,13 +265,15 @@ public class Tests extends TestUtils{
         System.out.println("JAVA THREAD");
 
         // 100 bytes accumulator
-        IQueueIOAccumulatorFactory<String> tenKAccumulatorFactory = () -> new StringSizeAccumulator(100);
+        IQueueIOAccumulatorFactory<String, String> tenKAccumulatorFactory = () -> new StringSizeAccumulator(100);
 
 
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,
+                new OutputQueues().withQueue(String.class, outputQueue),
+                t -> t)
                 .withByteBatchingPerConsumerThread(tenKAccumulatorFactory, flushSeconds, timeUnit);
         stringQueueIO.startConsuming();
 
@@ -309,13 +315,13 @@ public class Tests extends TestUtils{
         System.out.println("JAVA THREAD");
 
         // 100 bytes accumulator
-        IQueueIOAccumulatorFactory<String> tenKAccumulatorFactory = () -> new StringSizeAccumulator(100);
+        IQueueIOAccumulatorFactory<String, String> tenKAccumulatorFactory = () -> new StringSizeAccumulator(100);
 
 
         TransferQueue<String> outputQueue = new LinkedTransferQueue<>();
 
 
-        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue))
+        StringProducerQueueIO stringQueueIO = new StringProducerQueueIO(String.class, threadSize, 100_000,new OutputQueues().withQueue(String.class, outputQueue), t -> t)
                 .withByteBatchingPerConsumerThread(tenKAccumulatorFactory, flushSeconds, timeUnit);
         stringQueueIO.startConsuming();
 

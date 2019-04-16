@@ -12,18 +12,18 @@ import java.util.stream.Collectors;
 
 public class QueueIOServiceFactory {
 
-    private Map<Class, Set<IQueueIOService<?>>> serviceMap = new HashMap<>();
+    private Map<Class, Set<IQueueIOService<?, ?>>> serviceMap = new HashMap<>();
 
 
 
-    public <E>void registerObject(IQueueIOService<E> obj) {
+    public <E, T>void registerObject(IQueueIOService<E, T> obj) {
 
-        Set<IQueueIOService<?>> set = serviceMap.getOrDefault(obj.getInputClass(), new HashSet<>());
+        Set<IQueueIOService<?, ?>> set = serviceMap.getOrDefault(obj.getInputClass(), new HashSet<>());
         set.add(obj);
         serviceMap.putIfAbsent(obj.getInputClass(), set);
     }
 
-    public <E>void putObjectInQueues(E obj) {
+    public <E, T>void putObjectInQueues(E obj) {
 
         getMapSet(obj.getClass())
                 .ifPresent(l -> l.forEach(queue -> {
@@ -43,7 +43,7 @@ public class QueueIOServiceFactory {
 
     private Optional<Set<BlockingQueue<?>>> getMapSet(Class clazz)
     {
-        Set<IQueueIOService<?>> services = serviceMap.get(clazz);
+        Set<IQueueIOService<?, ?>> services = serviceMap.get(clazz);
 
         if(services == null)
             return Optional.empty();

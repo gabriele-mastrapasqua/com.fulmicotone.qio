@@ -4,5 +4,5 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface IObjectMapper<In, Out> extends Function<In, Optional<Out>> {
+public interface IFirehoseByteMapper extends Function<String, Optional<byte[]>> {
 }
