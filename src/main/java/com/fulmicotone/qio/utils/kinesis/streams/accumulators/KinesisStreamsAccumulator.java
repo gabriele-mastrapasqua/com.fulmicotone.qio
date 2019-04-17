@@ -1,6 +1,5 @@
 package com.fulmicotone.qio.utils.kinesis.streams.accumulators;
 
-import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorLengthFunction;
 import com.fulmicotone.qio.components.accumulator.QueueIOAccumulator;
 import com.fulmicotone.qio.utils.kinesis.streams.accumulators.interfaces.IKinesisStreamsByteMapper;
@@ -8,9 +7,10 @@ import com.fulmicotone.qio.utils.kinesis.streams.accumulators.interfaces.IKinesi
 import com.fulmicotone.qio.utils.kinesis.streams.accumulators.interfaces.IKinesisStreamsStringMapper;
 import com.fulmicotone.qio.utils.kinesis.streams.models.KinesisStreamsMapper;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
-public class KinesisStreamsAccumulator<I> extends QueueIOAccumulator<I, Record> {
+public class KinesisStreamsAccumulator<I> extends QueueIOAccumulator<I, ByteBuffer> {
 
     protected KinesisStreamsMapper<I> kinesisStreamsMapper;
 
@@ -22,7 +22,7 @@ public class KinesisStreamsAccumulator<I> extends QueueIOAccumulator<I, Record> 
     }
 
     @Override
-    public List<Record> getRecords() {
+    public List<ByteBuffer> getRecords() {
 
         IKinesisStreamsStringMapper<I> stringMapper = kinesisStreamsMapper.getStringMapper();
         IKinesisStreamsByteMapper byteMapper = kinesisStreamsMapper.getByteMapper();

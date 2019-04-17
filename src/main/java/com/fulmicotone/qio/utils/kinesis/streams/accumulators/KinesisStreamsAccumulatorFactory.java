@@ -12,7 +12,9 @@ import com.fulmicotone.qio.utils.kinesis.streams.accumulators.interfaces.IKinesi
 import com.fulmicotone.qio.utils.kinesis.streams.accumulators.interfaces.IKinesisStreamsStringMapper;
 import com.fulmicotone.qio.utils.kinesis.streams.models.KinesisStreamsMapper;
 
-public class KinesisStreamsAccumulatorFactory<I> implements IQueueIOAccumulatorFactory<I, Record> {
+import java.nio.ByteBuffer;
+
+public class KinesisStreamsAccumulatorFactory<I> implements IQueueIOAccumulatorFactory<I, ByteBuffer> {
 
     private IKinesisStreamsStringMapper<I> stringMapper;
     private IKinesisStreamsRecordMapper recordMapper;
@@ -20,12 +22,12 @@ public class KinesisStreamsAccumulatorFactory<I> implements IQueueIOAccumulatorF
     private KinesisStreamsAccumulatorLengthFunction<I> accumulatorLengthFunction;
     private double byteSizeLimit;
 
-    public KinesisStreamsAccumulatorFactory(double byteSizeLimit, IKinesisStreamsStringMapper<I> stringMapper, IKinesisStreamsRecordMapper recordMapper, IKinesisStreamsByteMapper byteMapper, KinesisStreamsAccumulatorLengthFunction<I> firehoseAccumulatorLengthFunction){
+    public KinesisStreamsAccumulatorFactory(double byteSizeLimit, IKinesisStreamsStringMapper<I> stringMapper, IKinesisStreamsRecordMapper recordMapper, IKinesisStreamsByteMapper byteMapper, KinesisStreamsAccumulatorLengthFunction<I> accumulatorLengthFunction){
         this.stringMapper = stringMapper;
         this.recordMapper = recordMapper;
         this.byteMapper = byteMapper;
         this.byteSizeLimit = byteSizeLimit;
-        this.accumulatorLengthFunction = firehoseAccumulatorLengthFunction;
+        this.accumulatorLengthFunction = accumulatorLengthFunction;
     }
 
 
@@ -36,7 +38,7 @@ public class KinesisStreamsAccumulatorFactory<I> implements IQueueIOAccumulatorF
 
 
     @Override
-    public IQueueIOAccumulator<I, Record> build() {
+    public IQueueIOAccumulator<I, ByteBuffer> build() {
 
         KinesisStreamsMapper mapper = KinesisStreamsMapper.newBuilder()
                 .withByteMapper(byteMapper)

@@ -19,15 +19,13 @@ public class BasicKinesisStreamsRecordMapper<I> implements IKinesisStreamsRecord
     public static final double RECORD_MAX_SIZE_IN_BYTES = 999_999.0;
 
 
-    private Record buildRecord(byte[] raw)
+    private ByteBuffer buildRecord(byte[] raw)
     {
-        Record record=new Record();
-        record.setData(ByteBuffer.wrap(raw));
-        return record;
+        return ByteBuffer.wrap(raw);
     }
 
     @Override
-    public Function<List<I>, List<Record>> apply(IKinesisStreamsStringMapper<I> iiKinesisStreamsStringMapper, IKinesisStreamsByteMapper iKinesisStreamsByteMapper) {
+    public Function<List<I>, List<ByteBuffer>> apply(IKinesisStreamsStringMapper<I> iiKinesisStreamsStringMapper, IKinesisStreamsByteMapper iKinesisStreamsByteMapper) {
 
 
         return is -> {
@@ -46,7 +44,7 @@ public class BasicKinesisStreamsRecordMapper<I> implements IKinesisStreamsRecord
 
             int splitter = (int) Math.ceil(raw.get().length / RECORD_MAX_SIZE_IN_BYTES);
 
-            return Lists.partition(is, is.size()/splitter).stream()
+            return Lists.partition(is, is.size() / splitter).stream()
                     .map(l -> iKinesisStreamsByteMapper.apply(iiKinesisStreamsStringMapper.apply(l)))
                     .filter(Optional::isPresent)
                     .map(Optional::get)

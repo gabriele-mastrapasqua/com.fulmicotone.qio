@@ -2,11 +2,12 @@ package com.fulmicotone.qio.utils.kinesis.streams.hashproviders;
 
 
 import com.amazonaws.services.kinesis.model.HashKeyRange;
+import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.interfaces.IExplicitShardKeyHelper;
 
 import java.util.SplittableRandom;
 import java.util.stream.Collectors;
 
-public class KCLShardKeyHelper {
+public class ExplicitShardKeyHelper implements IExplicitShardKeyHelper {
 
 
     private static final String CHARS = "0123456789";
@@ -18,7 +19,7 @@ public class KCLShardKeyHelper {
     private HashKeyRange range;
 
 
-    public KCLShardKeyHelper(String shardId, HashKeyRange range)
+    public ExplicitShardKeyHelper(String shardId, HashKeyRange range)
     {
         this.shardId = shardId;
         this.range = range;
@@ -30,19 +31,17 @@ public class KCLShardKeyHelper {
         this.lowerMostSignificant = range.getStartingHashKey().equals("0") ? 0L : Long.valueOf(range.getStartingHashKey().substring(0, lowerSubstring))-1;
     }
 
+    public String getShardId() {
+        return shardId;
+    }
 
-
-    public String generateRandomKey()
-    {
+    @Override
+    public String generateHashKey() {
         String mostSignificant = String.valueOf(random.nextLong(lowerMostSignificant, upperMostSignificant));
 
         String randomNumber = random.ints(LESS_SIGNIFICANT_LENGTH, 0, CHARS.length()).mapToObj(i -> "" + CHARS.charAt(i))
                 .collect(Collectors.joining());
 
         return mostSignificant + randomNumber;
-    }
-
-    public String getShardId() {
-        return shardId;
     }
 }

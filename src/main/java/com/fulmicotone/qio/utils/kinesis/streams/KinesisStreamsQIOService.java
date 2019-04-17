@@ -20,7 +20,6 @@ public class KinesisStreamsQIOService<I> extends QueueIOService<I, ByteBuffer> {
     final Logger log = LoggerFactory.getLogger(this.getClass());
     private String streamName;
     private String partitionKey;
-    private boolean logRequests = false;
     private IExplicitHashProviderFactory explicitHashProviderFactory;
     private KinesisProducer kinesisProducer;
     private Consumer<ListenableFuture<UserRecordResult>> userRecordConsumer;
@@ -38,7 +37,7 @@ public class KinesisStreamsQIOService<I> extends QueueIOService<I, ByteBuffer> {
         super(clazz, threadSize, multiThreadQueueSize, outputQueues, transformFunction);
     }
 
-    public KinesisStreamsQIOService<I> withStreamNames(String streamName){
+    public KinesisStreamsQIOService<I> withStreamName(String streamName){
         this.streamName = streamName;
         return this;
     }
@@ -68,20 +67,46 @@ public class KinesisStreamsQIOService<I> extends QueueIOService<I, ByteBuffer> {
 
     @Override
     public IQueueIOIngestionTask<ByteBuffer> ingestionTask() {
-        return new KinesisStreamsIngestionTask<ByteBuffer>(explicitHashProviderFactory.getHashProvider().nextHashKeyForStream(streamName)) {
 
-            @Override
-            public Void ingest(List<ByteBuffer> list) {
-                list.forEach(r -> putRecord(r, this.explicitHash));
-                return null;
-            }
-        };
+        if(explicitHashProviderFactory == null){
+            return new KinesisStreamsIngestionTask<ByteBuffer>() {
+
+                @Override
+                public Void ingest(List<ByteBuffer> list) {
+                    list.forEach(r -> putRecord(r));
+                    return null;
+                }
+            };
+        }
+        else{
+            return new KinesisStreamsIngestionTask<ByteBuffer>(explicitHashProviderFactory.getHashProvider().nextHashKey()) {
+
+                @Override
+                public Void ingest(List<ByteBuffer> list) {
+                    list.forEach(r -> putRecord(r, this.explicitHash));
+                    return null;
+                }
+            };
+        }
+
+
     }
 
 
     protected void putRecord(ByteBuffer record, String explicitHashKey) {
 
         ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(streamName, partitionKey, explicitHashKey, record);
+
+        if(userRecordConsumer != null){
+            userRecordConsumer.accept(future);
+        }
+
+        producedObjectNotification(record);
+    }
+
+    protected void putRecord(ByteBuffer record) {
+
+        ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(streamName, partitionKey, record);
 
         if(userRecordConsumer != null){
             userRecordConsumer.accept(future);

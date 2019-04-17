@@ -13,4 +13,7 @@ public abstract class KinesisStreamsIngestionTask<I> implements IQueueIOIngestio
         this.explicitHash = explicitHash;
     }
 
+    public KinesisStreamsIngestionTask(){
+    }
+
 }

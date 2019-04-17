@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -30,6 +31,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     private IQueueIOExecutor multiThreadExecutor;
     private IQueueIOExecutor singleExecutor;
     private Map<Integer, QueueIOQ<E>> internalQueues = new HashMap<>();
+    private Map<Integer, AtomicLong> internalQueuesReceivedElements = new HashMap<>();
 
     private QueueIOMetric queueIOMetric;
     private int internalQueueThreadCreationIndex = 0;
@@ -154,6 +156,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     private void initInternalQueues(Integer consumingThreads)
     {
         IntStream.range(0, consumingThreads).forEach(i -> internalQueues.put(i, new QueueIOQ<>(internalQueuesMaxSize)));
+        IntStream.range(0, consumingThreads).forEach(i -> internalQueuesReceivedElements.put(i, new AtomicLong()));
     }
 
 
@@ -170,6 +173,11 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     }
 
 
+    private void sendObjectToInternalQueue(E elm){
+        int idx = getNextQueueToBindIndex();
+        internalQueues.get(idx).add(elm);
+        internalQueuesReceivedElements.get(idx).incrementAndGet();
+    }
 
     private IQueueIOExecutorTask buildMainTask()
     {
@@ -180,7 +188,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                 {
                     E elm = inputQueue.take();
                     receivedObjectNotification(elm);
-                    internalQueues.get(getNextQueueToBindIndex()).add(elm);
+                    sendObjectToInternalQueue(elm);
                 }
                 catch(Exception ex) {
                     log.error("buildMainTask error {}", ex.toString());
@@ -250,24 +258,27 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                 try
                 {
                     long deadline = System.nanoTime() + flushTimeUnit.toNanos(flushTimeout);
-                    while (accumulator.hasSpaceAvailable()) {
+                    boolean isAccumulatorAvailable;
+                    E elm;
 
-                        E elm = queue.poll(1, TimeUnit.NANOSECONDS);
+                    do{
+                        elm = queue.poll(1, TimeUnit.NANOSECONDS);
 
                         if (elm == null) { // not enough elements immediately available; will have to poll
-                            E e = queue.poll(deadline - System.nanoTime(), TimeUnit.NANOSECONDS);
-                            if (e == null) {
+                            elm = queue.poll(deadline - System.nanoTime(), TimeUnit.NANOSECONDS);
+                            if (elm == null) {
                                 break; // we already waited enough, and there are no more elements in sight
                             }
-                            accumulator.add(e);
+                            isAccumulatorAvailable = accumulator.add(elm);
                         }else{
-                            accumulator.add(elm);
+                            isAccumulatorAvailable = accumulator.add(elm);
                         }
-
                     }
+                    while (isAccumulatorAvailable);
 
                     ingestionTask.ingest(accumulator.getRecords());
                     accumulator = accumulatorFactory.build();
+                    if(elm != null){ accumulator.add(elm); }
                 }
                 catch(Exception ex) {
                     log.error("buildInternalReceiverTaskByteBatching error {}", ex.toString());

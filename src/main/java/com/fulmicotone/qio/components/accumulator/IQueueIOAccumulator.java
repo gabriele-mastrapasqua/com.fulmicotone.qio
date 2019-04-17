@@ -6,9 +6,8 @@ import java.util.Optional;
 public interface IQueueIOAccumulator<I, T>  {
 
 
-    void add(I obj);
+    boolean add(I obj);
     List<T> getRecords();
-    boolean hasSpaceAvailable();
     IQueueIOAccumulatorLengthFunction<I> accumulatorLengthFunction();
 
 }

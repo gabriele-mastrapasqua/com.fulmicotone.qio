@@ -19,22 +19,17 @@ public abstract class QueueIOAccumulator<E, T> implements IQueueIOAccumulator<E,
 
 
     @Override
-    public void add(E obj) {
+    public boolean add(E obj) {
 
         double size = objectSize(obj);
 
         if(shouldBecomeFull(size)){
-            return;
+            return false;
         }
 
         accumulator.add(obj);
         accumulatorSize.addAndGet(size);
-    }
-
-
-    @Override
-    public boolean hasSpaceAvailable() {
-        return (accumulatorSize.get() < byteSizeLimit);
+        return true;
     }
 
 
