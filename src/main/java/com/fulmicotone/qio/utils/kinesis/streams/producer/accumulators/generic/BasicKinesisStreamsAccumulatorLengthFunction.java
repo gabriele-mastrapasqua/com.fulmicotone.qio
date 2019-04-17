@@ -1,11 +1,13 @@
 package com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic;
 
+import com.fulmicotone.qio.utils.kinesis.streams.common.interfaces.IKinesisListDecoder;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.interfaces.IKinesisStreamsByteMapper;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.interfaces.IKinesisStreamsStringMapper;
 
 import java.util.Collections;
 
 public class BasicKinesisStreamsAccumulatorLengthFunction<I> extends KinesisStreamsAccumulatorLengthFunction<I> {
+
 
     @Override
     public Double apply(I i) {

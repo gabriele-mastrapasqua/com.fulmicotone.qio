@@ -6,7 +6,7 @@ import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.KinesisStreamsQIOService;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsStringMapper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.ExplicitShardKeyHelper;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.HashProviderFactory;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
@@ -114,7 +114,7 @@ public class TestKinesisStreamsQIO extends TestUtils{
         int flushSeconds = 10;
 
         String streamName = "FAKE_STREAM";
-        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsStringMapper<>());
+        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsJsonStringMapper<>());
         TransferQueue<ByteBuffer> producedRecords = new LinkedTransferQueue<>();
 
 
@@ -176,7 +176,7 @@ public class TestKinesisStreamsQIO extends TestUtils{
                 shard1Range,
                 shard2Range
         );
-        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsStringMapper<>());
+        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsJsonStringMapper<>());
         TransferQueue<ByteBuffer> producedRecords = new LinkedTransferQueue<>();
         TransferQueue<String> explicitHashKeys = new LinkedTransferQueue<>();
         HashProviderFactoryTest hashProviderFactoryTest = new HashProviderFactoryTest(hashKeyRanges, new RoundRobinStreamShardHelper());

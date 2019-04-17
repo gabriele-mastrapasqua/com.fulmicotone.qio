@@ -5,5 +5,5 @@ import java.util.List;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface IKinesisListEncoder<I> extends Function<List<I>, ByteBuffer> {
+public interface IKinesisListEncoder<I> extends Function<List<I>, String> {
 }
