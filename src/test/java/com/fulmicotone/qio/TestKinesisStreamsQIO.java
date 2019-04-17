@@ -2,23 +2,17 @@ package com.fulmicotone.qio;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.HashKeyRange;
-import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
-import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.FirehoseAccumulatorFactory;
-import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.generic.BasicFirehoseJsonStringMapper;
-import com.fulmicotone.qio.utils.kinesis.firehose.enums.PutRecordMode;
-import com.fulmicotone.qio.utils.kinesis.streams.KinesisStreamsQIOService;
-import com.fulmicotone.qio.utils.kinesis.streams.accumulators.KinesisStreamsAccumulatorFactory;
-import com.fulmicotone.qio.utils.kinesis.streams.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
-import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.ExplicitShardKeyHelper;
-import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.HashProviderFactory;
-import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.abstracts.AbstractHashProviderFactory;
-import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.interfaces.IExplicitHashProvider;
-import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.interfaces.IExplicitShardKeyHelper;
-import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.interfaces.IStreamShardHelper;
-import com.fulmicotone.qio.utils.kinesis.streams.hashproviders.utils.RoundRobinStreamShardHelper;
-import com.google.common.collect.Queues;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.KinesisStreamsQIOService;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsStringMapper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.ExplicitShardKeyHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.HashProviderFactory;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IStreamShardHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.utils.HashKeyRangeHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -31,9 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static com.fulmicotone.qio.utils.kinesis.streams.consts.PutRecordLimits.PUT_LIMIT_MB;
 
 
 @RunWith(JUnit4.class)
@@ -120,16 +111,17 @@ public class TestKinesisStreamsQIO extends TestUtils{
     public void test_Put_Record_No_Hash_Provider(){
 
         double recordMaxSize = 100_000;
+        int flushSeconds = 10;
 
         String streamName = "FAKE_STREAM";
-        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsJsonStringMapper<>());
+        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsStringMapper<>());
         TransferQueue<ByteBuffer> producedRecords = new LinkedTransferQueue<>();
 
 
         // BOOTSTRAP SERVICE
         KinesisStreamsQIOServiceTest kinesisStreamsQIOServiceTest = new KinesisStreamsQIOServiceTest(String.class, 2)
                 .withStreamName(streamName)
-                .withByteBatchingPerConsumerThread(factory, 10, TimeUnit.SECONDS);
+                .withByteBatchingPerConsumerThread(factory, flushSeconds, TimeUnit.SECONDS);
 
         // DEFINE CALLBACK TO INTERCEPT PRODUCED OBJECTS
         kinesisStreamsQIOServiceTest.withPutRecordCallback(producedRecords::add);
@@ -139,20 +131,29 @@ public class TestKinesisStreamsQIO extends TestUtils{
         kinesisStreamsQIOServiceTest.startConsuming();
 
 
-        // GENERATE FAKE DATAS
-        this.tenByteStrings(10_000_000)
+        // GENERATE FAKE DATAS: Expected 10MB in size
+        this.tenByteStrings(1_000_000)
                 .forEach(i -> kinesisStreamsQIOServiceTest.getInputQueue().add(i));
 
 
         try {
+            Thread.sleep((long)((flushSeconds+1)*1000));
+
+
             List<ByteBuffer> elementsProduced = new ArrayList<>();
-            Queues.drain(producedRecords, elementsProduced, 10, 15, TimeUnit.SECONDS);
+            producedRecords.drainTo(elementsProduced);
 
             // EXPECT EVERY SINGLE Record HAVE A BYTE SUM < recordMaxSize
             Assert.isTrue(elementsProduced
                     .stream()
                     .filter(r -> r.array().length <= recordMaxSize)
                     .count() == elementsProduced.size(), "Single record have size > "+recordMaxSize);
+
+            // EXPECT THAT PRODUCED RECORD HAS > 10MB IN SIZE (Because of json conversion)
+            Assert.isTrue(elementsProduced
+                    .stream()
+                    .mapToInt(r -> r.array().length)
+                    .sum() > (1_000_000*10), "All records have size > "+recordMaxSize);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -167,12 +168,15 @@ public class TestKinesisStreamsQIO extends TestUtils{
         double recordMaxSize = 100_000;
         int flushSeconds = 10;
 
+        HashKeyRange shard1Range =  new HashKeyRange().withStartingHashKey("0").withEndingHashKey("140282366920938463463374607431768211455");
+        HashKeyRange shard2Range =  new HashKeyRange().withStartingHashKey("140282366920938463463374607431768211456").withEndingHashKey("340282366920938463463374607431768211455");
+
         String streamName = "FAKE_STREAM";
         List<HashKeyRange> hashKeyRanges = Arrays.asList(
-                new HashKeyRange().withStartingHashKey("0").withEndingHashKey("140282366920938463463374607431768211455"),
-                new HashKeyRange().withStartingHashKey("140282366920938463463374607431768211456").withEndingHashKey("340282366920938463463374607431768211455")
-                );
-        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsJsonStringMapper<>());
+                shard1Range,
+                shard2Range
+        );
+        KinesisStreamsAccumulatorFactory<String> factory = KinesisStreamsAccumulatorFactory.getBasicRecordFactory(recordMaxSize, new BasicKinesisStreamsStringMapper<>());
         TransferQueue<ByteBuffer> producedRecords = new LinkedTransferQueue<>();
         TransferQueue<String> explicitHashKeys = new LinkedTransferQueue<>();
         HashProviderFactoryTest hashProviderFactoryTest = new HashProviderFactoryTest(hashKeyRanges, new RoundRobinStreamShardHelper());
@@ -195,7 +199,7 @@ public class TestKinesisStreamsQIO extends TestUtils{
         kinesisStreamsQIOServiceTest.startConsuming();
 
 
-        // GENERATE FAKE DATAS: 10 MB
+        // GENERATE FAKE DATAS: 10 MB Strings
         this.tenByteStrings(1_000_000)
                 .forEach(i -> kinesisStreamsQIOServiceTest.getInputQueue().add(i));
 
@@ -212,6 +216,27 @@ public class TestKinesisStreamsQIO extends TestUtils{
                     .stream()
                     .filter(r -> r.array().length <= recordMaxSize)
                     .count() == elementsProduced.size(), "Single record have size > "+recordMaxSize);
+
+            // EXPECT THAT PRODUCED RECORD HAS > 10MB IN SIZE (Because of json conversion)
+            Assert.isTrue(elementsProduced
+                    .stream()
+                    .mapToInt(r -> r.array().length)
+                    .sum() > (1_000_000*10), "All records record have size > "+recordMaxSize);
+
+            // EXPECT THAT HALF OF HASH KEYS BELONGS TO ONE SHARD AND THE OTHER HALF TO ANOTHER.
+            List<String> keys = new ArrayList<>();
+            explicitHashKeys.drainTo(keys);
+
+            long shard1KeyOccurences = keys.stream()
+                    .filter(k -> HashKeyRangeHelper.isRangeBetween(k, shard1Range))
+                    .count();
+
+            long shard2KeyOccurences = keys.stream()
+                    .filter(k -> HashKeyRangeHelper.isRangeBetween(k, shard2Range))
+                    .count();
+
+            Assert.isTrue(shard1KeyOccurences+shard2KeyOccurences == keys.size(), "Hash keys are not distributed equally");
+
 
         } catch (InterruptedException e) {
             e.printStackTrace();
