@@ -3,12 +3,11 @@ package com.fulmicotone.qio.components.accumulator;
 import java.util.List;
 import java.util.Optional;
 
-public interface IQueueIOAccumulator<I>  {
+public interface IQueueIOAccumulator<I, T>  {
 
 
-    void add(I obj);
-    List<I> getRecords();
-    boolean hasSpaceAvailable();
+    boolean add(I obj);
+    List<T> getRecords();
     IQueueIOAccumulatorLengthFunction<I> accumulatorLengthFunction();
 
 }

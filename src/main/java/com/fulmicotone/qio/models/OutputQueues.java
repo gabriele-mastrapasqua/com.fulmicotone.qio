@@ -5,17 +5,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TransferQueue;
 import java.util.stream.Collectors;
 
 public class OutputQueues {
 
-    private HashMap<Class<?>, List<TransferQueue<?>>> queueMap = new HashMap<>();
+    private HashMap<Class<?>, List<BlockingQueue<?>>> queueMap = new HashMap<>();
 
 
-    public OutputQueues withQueue(Class<?> clazz, TransferQueue<?> queue)
+    public OutputQueues withQueue(Class<?> clazz, BlockingQueue<?> queue)
     {
-        List<TransferQueue<?>> queueList = queueMap.getOrDefault(clazz, new ArrayList<>());
+        List<BlockingQueue<?>> queueList = queueMap.getOrDefault(clazz, new ArrayList<>());
         queueList.add(queue);
         queueMap.put(clazz, queueList);
         return this;

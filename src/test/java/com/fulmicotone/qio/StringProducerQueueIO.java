@@ -1,18 +1,23 @@
 package com.fulmicotone.qio;
 
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
+import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
-import com.fulmicotone.qio.models.QueueIOService;
+import com.fulmicotone.qio.services.QueueIOService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class StringProducerQueueIO extends QueueIOService<String> {
+public class StringProducerQueueIO extends QueueIOService<String, String> {
 
 
-    public StringProducerQueueIO(Class<String> clazz, OutputQueues outputQueues) {
-        super(clazz, outputQueues);
+    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, OutputQueues outputQueues, IQueueIOTransform<String, String> transformFunction) {
+        super(clazz, threadSize, outputQueues, transformFunction);
+    }
+
+    public StringProducerQueueIO(Class<String> clazz, Integer threadSize, Integer multiThreadQueueSize, OutputQueues outputQueues, IQueueIOTransform<String, String> transformFunction) {
+        super(clazz, threadSize, multiThreadQueueSize, outputQueues, transformFunction);
     }
 
     @Override
@@ -21,6 +26,7 @@ public class StringProducerQueueIO extends QueueIOService<String> {
 
         return new IQueueIOIngestionTask<String>() {
 
+
             private final Logger log = LoggerFactory.getLogger(getClass());
             int increment = 0;
 
@@ -28,7 +34,7 @@ public class StringProducerQueueIO extends QueueIOService<String> {
             public Void ingest(List<String> list) {
 
                 list.forEach(elm -> {
-                    String str = Thread.currentThread().getName()+"="+increment++;
+                    String str = Thread.currentThread()+"="+increment++;
                     produce(str, String.class);
                 });
 

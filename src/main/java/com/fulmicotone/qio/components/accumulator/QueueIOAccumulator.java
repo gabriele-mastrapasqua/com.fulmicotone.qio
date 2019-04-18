@@ -5,12 +5,12 @@ import com.google.common.util.concurrent.AtomicDouble;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class QueueIOAccumulator<E> implements IQueueIOAccumulator<E> {
+public abstract class QueueIOAccumulator<E, T> implements IQueueIOAccumulator<E, T> {
 
     private double byteSizeLimit;
-    private List<E> accumulator = new ArrayList<>();
+    protected List<E> accumulator = new ArrayList<>();
     private AtomicDouble accumulatorSize = new AtomicDouble(0);
-    private final IQueueIOAccumulatorLengthFunction<E> accumulatorLengthFunction;
+    protected IQueueIOAccumulatorLengthFunction<E> accumulatorLengthFunction;
 
     public QueueIOAccumulator(double byteSizeLimit){
         this.byteSizeLimit = byteSizeLimit;
@@ -19,26 +19,17 @@ public abstract class QueueIOAccumulator<E> implements IQueueIOAccumulator<E> {
 
 
     @Override
-    public void add(E obj) {
+    public boolean add(E obj) {
 
         double size = objectSize(obj);
 
         if(shouldBecomeFull(size)){
-            return;
+            return false;
         }
 
         accumulator.add(obj);
         accumulatorSize.addAndGet(size);
-    }
-
-    @Override
-    public List<E> getRecords() {
-        return accumulator;
-    }
-
-    @Override
-    public boolean hasSpaceAvailable() {
-        return (accumulatorSize.get() < byteSizeLimit);
+        return true;
     }
 
 

@@ -1,11 +1,15 @@
 package com.fulmicotone.qio.interfaces;
 
+import com.fulmicotone.qio.components.metrics.QueueIOMetric;
+import com.fulmicotone.qio.models.QueueIOQ;
+
 import java.util.List;
-import java.util.concurrent.TransferQueue;
 
-public interface IQueueIOService<I> {
+// Input type I and optional T as (T)ransformed
+public interface IQueueIOService<I, T> {
 
-    TransferQueue<I> getInputQueue();
+    QueueIOQ<I> getInputQueue();
+    int getInternalThreads();
     Class<I> getInputClass();
     String getUniqueKey();
 
@@ -17,12 +21,15 @@ public interface IQueueIOService<I> {
     void receivedBytesNotification(byte[] object);
 
 
-    IQueueIOIngestionTask<I> ingestionTask();
+    IQueueIOIngestionTask<T> ingestionTask();
 
 
     <E>void produce(E elm, Class<E> clazz);
     <E>void produceAll(List<E> elm, Class<E> clazz);
 
+    void updateMetrics();
+    void registerMetrics(String appNamespace);
+    QueueIOMetric getMetrics();
     void flush();
     void onDestroy();
 }
