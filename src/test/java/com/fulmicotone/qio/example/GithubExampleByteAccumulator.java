@@ -9,6 +9,8 @@ import com.fulmicotone.qio.example.qio.IntentDiscoverQIO;
 import com.fulmicotone.qio.example.qio.IntentStorerQIO;
 import com.fulmicotone.qio.example.utils.PageViewCSVAccumulator;
 import com.fulmicotone.qio.models.OutputQueues;
+import com.fulmicotone.qio.services.QueueIOServiceObserver;
+import com.fulmicotone.qio.services.QueueIOStatusService;
 
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
@@ -21,6 +23,13 @@ public class GithubExampleByteAccumulator {
 
     public static void main(String[] args)
     {
+        // OBSERVER
+        QueueIOStatusService statusService = new QueueIOStatusService();
+        QueueIOServiceObserver serviceObserver = new QueueIOServiceObserver()
+                .withStatusService(statusService);
+
+
+
         // INTENT STORER QIO - Will store the Intent objects to the database.
         IntentStorerQIO intentStorerQIO = new IntentStorerQIO(Intent.class,2, null, t -> t);
 
@@ -36,7 +45,12 @@ public class GithubExampleByteAccumulator {
         DomainCountQIO domainCountQIO = new DomainCountQIO(PageView.class,2, null, t -> t)
                 .withByteBatchingPerConsumerThread(PageViewCSVAccumulatorFactory, 5, TimeUnit.SECONDS);
 
+        // REGISTER
+        serviceObserver.registerObject(intentDiscoverQIO);
+        serviceObserver.registerObject(intentStorerQIO);
+        serviceObserver.registerObject(domainCountQIO);
 
+        // START CONSUMING
         intentStorerQIO.startConsuming();
         domainCountQIO.startConsuming();
         intentDiscoverQIO.startConsuming();
@@ -58,6 +72,7 @@ public class GithubExampleByteAccumulator {
             e.printStackTrace();
         }
 
+        System.out.println(statusService.getMetricsString());
 
     }
 }

@@ -2,7 +2,7 @@ package com.fulmicotone.qio.components.metrics;
 
 import com.fulmicotone.qio.components.metrics.types.*;
 import com.fulmicotone.qio.models.QueueIOQ;
-import com.fulmicotone.qio.models.QueueIOService;
+import com.fulmicotone.qio.services.QueueIOService;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -15,9 +15,13 @@ public class QueueIOMetric {
     private MetricReceivedElements metricReceivedElements;
     private MetricProducedBytes metricProducedBytes;
     private MetricReceivedBytes metricReceivedBytes;
+
     private MetricInputQueueSize metricInputQueueSize;
+    private MetricExecutorQueueSize metricSingleExecutorQueueSize;
+    private MetricExecutorQueueSize metricMultiExecutorQueueSize;
+
+
     private MetricInternalQueuesAVGSize metricInternalQueuesAVGSize;
-    private MetricExecutorQueueSize metricExecutorQueueSize;
 
     public QueueIOMetric(QueueIOService service)
     {
@@ -28,7 +32,8 @@ public class QueueIOMetric {
         metricProducedBytes = new MetricProducedBytes(uniqueKey);
         metricReceivedBytes = new MetricReceivedBytes(uniqueKey);
         metricInputQueueSize = new MetricInputQueueSize(uniqueKey);
-        metricExecutorQueueSize = new MetricExecutorQueueSize(uniqueKey);
+        metricSingleExecutorQueueSize = new MetricExecutorQueueSize(uniqueKey);
+        metricMultiExecutorQueueSize = new MetricExecutorQueueSize(uniqueKey);
         metricInternalQueuesAVGSize = new MetricInternalQueuesAVGSize(uniqueKey);
     }
 
@@ -40,7 +45,8 @@ public class QueueIOMetric {
         metricProducedBytes.register(appNameSpace);
         metricReceivedBytes.register(appNameSpace);
         metricInputQueueSize.register(appNameSpace);
-        metricExecutorQueueSize.register(appNameSpace);
+        metricSingleExecutorQueueSize.register(appNameSpace);
+        metricMultiExecutorQueueSize.register(appNameSpace);
         metricInternalQueuesAVGSize.register(appNameSpace);
     }
 
@@ -65,8 +71,12 @@ public class QueueIOMetric {
         metricInputQueueSize.setValue(queue.size());
     }
 
-    public void setMetricExecutorQueueSize(BlockingQueue queue){
-        metricExecutorQueueSize.setValue(queue.size());
+    public void setMetricSingleExecutorQueueSize(BlockingQueue queue){
+        metricSingleExecutorQueueSize.setValue(queue.size());
+    }
+
+    public void setMetricMultiExecutorQueueSize(BlockingQueue queue){
+        metricMultiExecutorQueueSize.setValue(queue.size());
     }
 
     public void setMetricInternalQueuesAVGSize(List<QueueIOQ> queues){
@@ -78,8 +88,11 @@ public class QueueIOMetric {
         return metricInputQueueSize.getValue();
     }
 
-    public int getExecutorQueueSizeValue(){
-        return metricExecutorQueueSize.getValue();
+    public int getMultiExecutorQueueSizeValue(){
+        return metricMultiExecutorQueueSize.getValue();
+    }
+    public int getSingleExecutorQueueSizeValue(){
+        return metricSingleExecutorQueueSize.getValue();
     }
 
     public int getMetricInternalQueuesAVGSize(){

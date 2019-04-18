@@ -1,16 +1,12 @@
 package com.fulmicotone.qio.example.qio;
 
 import com.fulmicotone.qio.example.models.Intent;
-import com.fulmicotone.qio.example.models.PageView;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
-import com.fulmicotone.qio.models.QueueIOService;
+import com.fulmicotone.qio.services.QueueIOService;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.SplittableRandom;
-import java.util.stream.Collectors;
 
 public class IntentStorerQIO extends QueueIOService<Intent, Intent> {
 

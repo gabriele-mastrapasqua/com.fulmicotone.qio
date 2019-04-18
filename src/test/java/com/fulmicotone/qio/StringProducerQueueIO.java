@@ -3,12 +3,11 @@ package com.fulmicotone.qio;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
-import com.fulmicotone.qio.models.QueueIOService;
+import com.fulmicotone.qio.services.QueueIOService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.UUID;
 
 public class StringProducerQueueIO extends QueueIOService<String, String> {
 

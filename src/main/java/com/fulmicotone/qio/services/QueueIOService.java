@@ -1,4 +1,4 @@
-package com.fulmicotone.qio.models;
+package com.fulmicotone.qio.services;
 
 
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulator;
@@ -6,6 +6,8 @@ import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorFactory;
 import com.fulmicotone.qio.components.metrics.QueueIOMetric;
 import com.fulmicotone.qio.factories.QueueIOExecutorFactory;
 import com.fulmicotone.qio.interfaces.*;
+import com.fulmicotone.qio.models.OutputQueues;
+import com.fulmicotone.qio.models.QueueIOQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -344,13 +346,18 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
 
     @Override
     public void updateMetrics() {
-        queueIOMetric.setMetricExecutorQueueSize(multiThreadExecutor.getQueue());
+        queueIOMetric.setMetricMultiExecutorQueueSize(multiThreadExecutor.getQueue());
         queueIOMetric.setMetricInputQueueSizeValue(singleExecutor.getQueue());
         queueIOMetric.setMetricInternalQueuesAVGSize(internalQueues
                 .entrySet()
                 .stream()
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    public QueueIOMetric getMetrics() {
+        return queueIOMetric;
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorF
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
-import com.fulmicotone.qio.models.QueueIOService;
+import com.fulmicotone.qio.services.QueueIOService;
 
 
 /**

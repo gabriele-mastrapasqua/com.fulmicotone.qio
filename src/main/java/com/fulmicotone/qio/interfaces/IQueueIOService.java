@@ -1,5 +1,6 @@
 package com.fulmicotone.qio.interfaces;
 
+import com.fulmicotone.qio.components.metrics.QueueIOMetric;
 import com.fulmicotone.qio.models.QueueIOQ;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public interface IQueueIOService<I, T> {
 
     void updateMetrics();
     void registerMetrics(String appNamespace);
+    QueueIOMetric getMetrics();
     void flush();
     void onDestroy();
 }

@@ -95,7 +95,10 @@ public class BatchingTests extends TestUtils{
         stringQueueIO.startConsuming();
 
 
-        long ms = System.currentTimeMillis();
+        long realDeadline = System.currentTimeMillis()+((flushSeconds)*1000)-100;
+        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
+
+        // 10 bytes STRINGS * ELEMENTS
         stringsGenerator(elements).forEach(s -> {
             try {
                 stringQueueIO.getInputQueue().put(s);
@@ -104,15 +107,21 @@ public class BatchingTests extends TestUtils{
             }
         });
 
-
-        while(outputQueue.size() < elements){
-
+        while (realDeadline > System.currentTimeMillis()){
+            List<String> collection = new ArrayList<>();
+            outputQueue.drainTo(collection);
+            if(collection.size() > 0){
+                Assert.isTrue(false, "Flush does not work");
+            }
         }
 
-        Assert.isTrue((System.currentTimeMillis()-ms) > flushSeconds*1000, "Time passed is > than "+flushSeconds+" "+timeUnit.name());
+        while (resultDeadline > System.currentTimeMillis()){
+        }
+
 
         Set<String> results = new HashSet<>();
         outputQueue.drainTo(results);
+
 
         // EXPECT 4 ELEMENTS IN
         Assert.isTrue(results.size() == elements, "Elements are:"+results.size()+" expected "+elements);

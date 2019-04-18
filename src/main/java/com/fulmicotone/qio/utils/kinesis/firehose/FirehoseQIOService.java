@@ -7,7 +7,7 @@ import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
-import com.fulmicotone.qio.models.QueueIOService;
+import com.fulmicotone.qio.services.QueueIOService;
 import com.fulmicotone.qio.utils.kinesis.firehose.enums.PutRecordMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +100,7 @@ public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
             }
 
             producedObjectNotification(record);
+            producedBytesNotification(record.getData().array());
         }
         catch (Exception e)
         {
@@ -130,6 +131,8 @@ public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
             }
 
             producedObjectsNotification(list);
+            list.forEach(f -> producedBytesNotification(f.getData().array()));
+
         }
         catch (Exception e)
         {

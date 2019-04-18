@@ -1,10 +1,10 @@
 package com.fulmicotone.qio.models;
 
 import com.fulmicotone.qio.components.metrics.types.MetricInputQueueSize;
+import com.fulmicotone.qio.services.QueueIOService;
 
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.LinkedTransferQueue;
 
 public class QueueIOQ<E> extends LinkedBlockingQueue<E> {
 
