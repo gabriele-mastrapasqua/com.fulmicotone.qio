@@ -1,4 +1,4 @@
-package com.fulmicotone.qio.utils.kinesis.streams.consumer.models;
+package com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models;
 
 /**
  * Created by enryold on 20/12/16.

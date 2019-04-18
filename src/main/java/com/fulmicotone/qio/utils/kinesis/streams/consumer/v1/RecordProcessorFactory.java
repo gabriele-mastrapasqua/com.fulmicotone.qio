@@ -3,7 +3,7 @@ package com.fulmicotone.qio.utils.kinesis.streams.consumer.v1;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 import com.amazonaws.services.kinesis.model.Record;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.models.KCLConsumerEntry;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -7,8 +7,8 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorCheckpointer;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.models.KCLConsumer;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.models.KCLConsumerEntry;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumer;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

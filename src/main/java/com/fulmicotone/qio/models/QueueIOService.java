@@ -1,13 +1,11 @@
 package com.fulmicotone.qio.models;
 
 
-
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulator;
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorFactory;
 import com.fulmicotone.qio.components.metrics.QueueIOMetric;
 import com.fulmicotone.qio.factories.QueueIOExecutorFactory;
 import com.fulmicotone.qio.interfaces.*;
-import com.google.common.collect.Queues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +39,6 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     private int chunkSize = 100;
     private int flushTimeout = 30;
     private TimeUnit flushTimeUnit = TimeUnit.SECONDS;
-    private boolean useQuasar;
     private boolean sizeBatchingEnabled = false;
     private boolean byteBatchingEnabled = false;
     private IQueueIOAccumulatorFactory<E, T> accumulatorFactory;
@@ -69,11 +66,6 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     }
 
 
-
-    public <I extends QueueIOService<E, T>> I withQuasar(boolean withQuasar){
-        this.useQuasar = withQuasar;
-        return (I)this;
-    }
 
     public <I extends QueueIOService<E, T>> I withQueueIOMetric(QueueIOMetric metric){
         this.queueIOMetric = metric;
@@ -145,12 +137,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     }
 
     private IQueueIOExecutor initMultiThreadExecutor(Integer consumingThreads, Integer queueSize){
-
-        if(useQuasar){
-            return QueueIOExecutorFactory.createFiberExecutor(getClass().getSimpleName()+"-fmt", consumingThreads, queueSize);
-        }else{
-            return QueueIOExecutorFactory.createExecutor(getClass().getSimpleName()+"-mt", consumingThreads, queueSize);
-        }
+        return QueueIOExecutorFactory.createExecutor(getClass().getSimpleName()+"-mt", consumingThreads, queueSize);
     }
 
     private void initInternalQueues(Integer consumingThreads)
@@ -178,6 +165,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
         internalQueues.get(idx).add(elm);
         internalQueuesReceivedElements.get(idx).incrementAndGet();
     }
+
 
     private IQueueIOExecutorTask buildMainTask()
     {
@@ -230,9 +218,28 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
             {
                 try
                 {
+                    E elm;
                     List<E> collection = new ArrayList<>();
-                    Queues.drain(queue, collection, chunkSize, flushTimeout, flushTimeUnit);
+                    long deadline = System.nanoTime() + flushTimeUnit.toNanos(flushTimeout);
+
+                    do{
+                        elm = queue.poll(1, TimeUnit.NANOSECONDS);
+
+                        if (elm == null) { // not enough elements immediately available; will have to poll
+                            elm = queue.poll(deadline - System.nanoTime(), TimeUnit.NANOSECONDS);
+                            if (elm == null) {
+                                break; // we already waited enough, and there are no more elements in sight
+                            }
+                            collection.add(elm);
+                        }else{
+                            collection.add(elm);
+                        }
+                    }
+                    while (collection.size() < chunkSize);
+
+
                     ingestionTask.ingest(collection.stream().map(transformFunction).collect(Collectors.toList()));
+
                 }
                 catch(Exception ex) {
                     log.error("buildInternalReceiverTaskSizeBatching error {}", ex.toString());
@@ -276,7 +283,10 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                     }
                     while (isAccumulatorAvailable);
 
+
                     ingestionTask.ingest(accumulator.getRecords());
+
+
                     accumulator = accumulatorFactory.build();
                     if(elm != null){ accumulator.add(elm); }
                 }

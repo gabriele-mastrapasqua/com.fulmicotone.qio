@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.UUID;
 
 public class StringProducerQueueIO extends QueueIOService<String, String> {
 
@@ -26,6 +27,7 @@ public class StringProducerQueueIO extends QueueIOService<String, String> {
 
         return new IQueueIOIngestionTask<String>() {
 
+
             private final Logger log = LoggerFactory.getLogger(getClass());
             int increment = 0;
 
@@ -33,7 +35,7 @@ public class StringProducerQueueIO extends QueueIOService<String, String> {
             public Void ingest(List<String> list) {
 
                 list.forEach(elm -> {
-                    String str = Thread.currentThread().getName()+"="+increment++;
+                    String str = Thread.currentThread()+"="+increment++;
                     produce(str, String.class);
                 });
 

@@ -22,6 +22,7 @@ public class KinesisConsumerQIOService<I> extends QueueIOService<I, Void> {
         super(null, 1, 1, null, null);
         this.recordProcessorFactory = recordProcessorFactory;
         this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
+        init();
     }
 
 

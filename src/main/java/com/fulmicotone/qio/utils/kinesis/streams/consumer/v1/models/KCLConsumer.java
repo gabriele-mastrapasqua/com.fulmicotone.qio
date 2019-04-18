@@ -1,4 +1,4 @@
-package com.fulmicotone.qio.utils.kinesis.streams.consumer.models;
+package com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models;
 
 
 import com.fulmicotone.qio.utils.kinesis.streams.common.interfaces.IKinesisDataTransform;
