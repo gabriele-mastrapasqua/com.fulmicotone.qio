@@ -12,14 +12,14 @@ import com.fulmicotone.qio.services.QueueIOService;
  * We use the KinesisRecordProcessor to convert the ByteBuffer datas we receiving from Kinesis indo Java objects and push them to the right queue.
  *
 */
-public class KinesisConsumerQIOService<I> extends QueueIOService<I, Void> {
+public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
 
     private IRecordProcessorFactory recordProcessorFactory;
     private KinesisClientLibConfiguration kinesisClientLibConfiguration;
     private Worker kclWorker;
 
     public KinesisConsumerQIOService(IRecordProcessorFactory recordProcessorFactory, KinesisClientLibConfiguration kinesisClientLibConfiguration) {
-        super(null, 1, 1, null, null);
+        super(Void.class, 1, 1, null, t -> t);
         this.recordProcessorFactory = recordProcessorFactory;
         this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
         init();
