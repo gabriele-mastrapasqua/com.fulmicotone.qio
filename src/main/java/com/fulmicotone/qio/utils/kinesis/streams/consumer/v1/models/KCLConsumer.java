@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TransferQueue;
+import java.util.Queue;
 
 /**
  * Created by enryold on 20/12/16.
@@ -16,14 +16,14 @@ import java.util.concurrent.TransferQueue;
 public class KCLConsumer<T, O>
 {
     private IKinesisListDecoder<T> decoderList;
-    private TransferQueue destinationQueue;
+    private Queue destinationQueue;
     private Class<T> clazz;
     private IKinesisDataTransform<T, ?> transform;
     private String friendlyName;
 
 
 
-    public KCLConsumer(IKinesisListDecoder<T> decoder, TransferQueue<T> destinationQueue, Class<T> clazz, String friendlyName)
+    public KCLConsumer(IKinesisListDecoder<T> decoder, Queue<T> destinationQueue, Class<T> clazz, String friendlyName)
     {
         this.decoderList = decoder;
         this.destinationQueue = destinationQueue;
@@ -32,7 +32,7 @@ public class KCLConsumer<T, O>
         this.transform = (IKinesisDataTransform<T, T>) tOpt -> tOpt.map(Collections::singletonList);
     }
 
-    public KCLConsumer(IKinesisListDecoder<T> decoder, IKinesisDataTransform<T, O> transform, TransferQueue<O> destinationQueue, Class<T> clazz, String friendlyName)
+    public KCLConsumer(IKinesisListDecoder<T> decoder, IKinesisDataTransform<T, O> transform, Queue<O> destinationQueue, Class<T> clazz, String friendlyName)
     {
         this.decoderList = decoder;
         this.destinationQueue = destinationQueue;
