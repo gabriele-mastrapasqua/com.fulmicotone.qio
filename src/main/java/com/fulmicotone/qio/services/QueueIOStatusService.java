@@ -61,6 +61,10 @@ public class QueueIOStatusService {
 
         header(builder);
 
+        // TODO: ALL CPU vs THREADS OCCUPIED
+        // TODO: QueueIOService CPU thread Single + Multi
+
+
         for(QueueIOService q : queueIOServices.stream()
                 .sorted(Comparator.comparing(QueueIOService::getUniqueKey))
                 .collect(Collectors.toList()))
@@ -103,6 +107,7 @@ public class QueueIOStatusService {
         final Function<String, String> wrap = s -> "QIO_METRIC \n";
         builder.append(wrap.apply(""));
     }
+
 
     private void header(StringBuilder builder)
     {
