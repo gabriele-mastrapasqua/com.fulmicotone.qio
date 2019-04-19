@@ -28,8 +28,8 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
 
     private QueueIOQ<E> inputQueue;
     private OutputQueues outputQueues;
-    private IQueueIOExecutor multiThreadExecutor;
-    private IQueueIOExecutor singleExecutor;
+    protected IQueueIOExecutor multiThreadExecutor;
+    protected IQueueIOExecutor singleExecutor;
     private Map<Integer, QueueIOQ<E>> internalQueues = new HashMap<>();
     private Map<Integer, AtomicLong> internalQueuesReceivedElements = new HashMap<>();
 
@@ -47,7 +47,6 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     private IQueueIOTransform<E, T> transformFunction;
 
 
-    // METRICS
 
 
 

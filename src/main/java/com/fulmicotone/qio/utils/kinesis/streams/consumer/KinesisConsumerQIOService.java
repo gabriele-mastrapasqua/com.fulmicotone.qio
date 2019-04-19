@@ -34,6 +34,10 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
                 .build();
     }
 
+    @Override
+    public void startConsuming() {
+        this.singleExecutor.execute(kclWorker);
+    }
 
     @Override
     public IQueueIOIngestionTask<Void> ingestionTask() {
