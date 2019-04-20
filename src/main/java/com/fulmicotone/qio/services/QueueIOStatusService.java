@@ -44,7 +44,6 @@ public class QueueIOStatusService {
     }
 
 
-    // TODO: SCHEDULER
     public void updateCloudWatchMetrics() {
 
         queueIOServices
@@ -54,12 +53,12 @@ public class QueueIOStatusService {
 
 
 
-    // TODO: SCHEDULER
     public String getMetricsString()
     {
         StringBuilder builder = new StringBuilder();
 
         header(builder);
+        logSystemThreads(builder);
 
         for(QueueIOService q : queueIOServices.stream()
                 .sorted(Comparator.comparing(QueueIOService::getUniqueKey))
@@ -75,6 +74,21 @@ public class QueueIOStatusService {
     }
 
 
+    private void logSystemThreads( StringBuilder builder)
+    {
+        int totalThreads = 0;
+        int activeThreads = 0;
+        int systemThreads = Runtime.getRuntime().availableProcessors();
+
+        for(QueueIOService q : queueIOServices.stream()
+                .sorted(Comparator.comparing(QueueIOService::getUniqueKey))
+                .collect(Collectors.toList()))
+        {
+            totalThreads += q.singleExecutor.getMaximumPoolSize()+q.multiThreadExecutor.getMaximumPoolSize();
+            activeThreads += q.singleExecutor.getActiveCount()+q.multiThreadExecutor.getActiveCount();
+            builder.append("QIO_METRIC THREADS - System: "+systemThreads+" - QIOTotal:"+totalThreads+" - QIOActive:"+activeThreads).append("\n");
+        }
+    }
 
 
     private void logQIO(QueueIOService q, StringBuilder builder)
@@ -82,6 +96,7 @@ public class QueueIOStatusService {
         QueueIOMetric metric = q.getMetrics();
         String qioName = q.getUniqueKey();
 
+        String line10 = "QIO_METRIC "+qioName+ ": Active Threads:  "+q.multiThreadExecutor.getActiveCount()+" - "+q.multiThreadExecutor.getMaximumPoolSize();
         String line1a = "QIO_METRIC "+qioName+ ": InputQueue:        "+metric.getInputQueueSizeValue();
         String line1b = "QIO_METRIC "+qioName+ ": SingleExecQueue:   "+metric.getSingleExecutorQueueSizeValue();
         String line1c = "QIO_METRIC "+qioName+ ": MultiExecQueue:    "+metric.getMultiExecutorQueueSizeValue();
@@ -95,7 +110,7 @@ public class QueueIOStatusService {
                 ": Bytes (In/Out)     "+
                 metric.getMetricReceivedBytes().getValue()+" - "+metric.getMetricProducedBytes().getValue();
 
-        builder.append(String.join("\n", line1a, line1b, line1c, line1d, line2, line3)).append("\n");
+        builder.append(String.join("\n", line10, line1a, line1b, line1c, line1d, line2, line3)).append("\n");
     }
 
     private void delimiter(QueueIOService q, StringBuilder builder)
@@ -103,6 +118,7 @@ public class QueueIOStatusService {
         final Function<String, String> wrap = s -> "QIO_METRIC \n";
         builder.append(wrap.apply(""));
     }
+
 
     private void header(StringBuilder builder)
     {

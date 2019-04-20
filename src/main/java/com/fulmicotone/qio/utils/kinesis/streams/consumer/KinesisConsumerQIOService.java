@@ -37,6 +37,7 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
     @Override
     public void startConsuming() {
         singleExecutor = initSingleThreadExecutor();
+        multiThreadExecutor = initSingleThreadExecutor();
         singleExecutor.execute(kclWorker);
     }
 
