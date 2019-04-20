@@ -200,6 +200,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                 }
                 catch(Exception ex) {
                     log.error("buildInternalReceiverTask error {}", ex.toString());
+                    ex.printStackTrace();
                 }
             }
             return null;
@@ -244,6 +245,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                 }
                 catch(Exception ex) {
                     log.error("buildInternalReceiverTaskSizeBatching error {}", ex.toString());
+                    ex.printStackTrace();
                 }
             }
             return null;
