@@ -54,6 +54,9 @@ public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
 
     private void sendRecords(List<Record> list, String streamName) {
 
+        if(list.size() == 0){
+            return;
+        }
 
         switch (putRecordMode)
         {
