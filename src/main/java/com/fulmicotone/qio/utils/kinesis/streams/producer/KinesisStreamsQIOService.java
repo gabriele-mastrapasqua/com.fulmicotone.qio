@@ -95,6 +95,8 @@ public class KinesisStreamsQIOService<I> extends QueueIOService<I, ByteBuffer> {
 
     protected void putRecord(ByteBuffer record, String explicitHashKey) {
 
+
+
         ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(streamName, partitionKey, explicitHashKey, record);
 
         if(userRecordConsumer != null){
