@@ -1,39 +1,34 @@
 package com.fulmicotone.qio.models;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TransferQueue;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class OutputQueues {
 
-    private HashMap<Class<?>, List<BlockingQueue<?>>> queueMap = new HashMap<>();
+    private HashMap<Class<?>, List<Queue<?>>> queueMap = new HashMap<>();
 
 
-    public OutputQueues withQueue(Class<?> clazz, BlockingQueue<?> queue)
+    public OutputQueues withQueue(Class<?> clazz, Queue<?> queue)
     {
-        List<BlockingQueue<?>> queueList = queueMap.getOrDefault(clazz, new ArrayList<>());
+        List<Queue<?>> queueList = queueMap.getOrDefault(clazz, new ArrayList<>());
         queueList.add(queue);
         queueMap.put(clazz, queueList);
         return this;
     }
 
-    public <I>Optional<List<TransferQueue<I>>> getQueues(Class<I> clazz)
+    public <I>Optional<List<Queue<I>>> getQueues(Class<I> clazz)
     {
         if(queueMap.get(clazz) == null)
             return Optional.empty();
 
-        List<TransferQueue<I>>  queues = queueMap
+        List<Queue<I>>  queues = queueMap
                 .get(clazz)
                 .stream()
-                .map(o ->(TransferQueue<I>)o)
+                .map(o ->(Queue<I>)o)
                 .collect(Collectors.toList());
 
-        if(queues == null || queues.size() == 0)
+        if(queues.size() == 0)
             return Optional.empty();
         else
             return Optional.of(queues);

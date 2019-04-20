@@ -86,8 +86,10 @@ public class QueueIOStatusService {
         {
             totalThreads += q.singleExecutor.getMaximumPoolSize()+q.multiThreadExecutor.getMaximumPoolSize();
             activeThreads += q.singleExecutor.getActiveCount()+q.multiThreadExecutor.getActiveCount();
-            builder.append("QIO_METRIC THREADS - System: "+systemThreads+" - QIOTotal:"+totalThreads+" - QIOActive:"+activeThreads).append("\n");
         }
+
+        builder.append("QIO_METRIC THREADS - System: "+systemThreads+" - QIOTotal:"+totalThreads+" - QIOActive:"+activeThreads).append("\n");
+
     }
 
 

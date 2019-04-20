@@ -73,8 +73,16 @@ public class KinesisStreamsQIOService<I> extends QueueIOService<I, ByteBuffer> {
 
                 @Override
                 public Void ingest(List<ByteBuffer> list) {
-                    list.forEach(r -> putRecord(r));
+
+                    try {
+                        list.forEach(r -> putRecord(r));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                     return null;
+
+
+
                 }
             };
         }
@@ -83,7 +91,11 @@ public class KinesisStreamsQIOService<I> extends QueueIOService<I, ByteBuffer> {
 
                 @Override
                 public Void ingest(List<ByteBuffer> list) {
-                    list.forEach(r -> putRecord(r, this.explicitHash));
+                    try {
+                        list.forEach(r -> putRecord(r, this.explicitHash));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                     return null;
                 }
             };
