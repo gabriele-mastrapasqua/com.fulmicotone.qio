@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 public class QueueIOStatusService {
@@ -98,11 +99,19 @@ public class QueueIOStatusService {
         QueueIOMetric metric = q.getMetrics();
         String qioName = q.getUniqueKey();
 
-        String line10 = "QIO_METRIC "+qioName+ ": Active Threads:  "+q.multiThreadExecutor.getActiveCount()+" - "+q.multiThreadExecutor.getMaximumPoolSize();
+        // INTERNAL QUEUE STATUS
+        String internalQueueStatus = IntStream.range(0, q.getInternalThreads())
+                .mapToObj(i -> "[#"+i+" : "+q.getInternalQueueSize(i)+"]")
+                .collect(Collectors.joining(" | "));
+
+
+
+        String line10 = "QIO_METRIC "+qioName+ ": Active Threads:    "+q.multiThreadExecutor.getActiveCount()+" - "+q.multiThreadExecutor.getMaximumPoolSize();
         String line1a = "QIO_METRIC "+qioName+ ": InputQueue:        "+metric.getInputQueueSizeValue();
         String line1b = "QIO_METRIC "+qioName+ ": SingleExecQueue:   "+metric.getSingleExecutorQueueSizeValue();
         String line1c = "QIO_METRIC "+qioName+ ": MultiExecQueue:    "+metric.getMultiExecutorQueueSizeValue();
-        String line1d = "QIO_METRIC "+qioName+ ": IntervalAVGQueue:  "+metric.getMetricInternalQueuesAVGSize();
+        String line1d = "QIO_METRIC "+qioName+ ": InternalAVGQueue:  "+metric.getMetricInternalQueuesAVGSize();
+        String line1e = "QIO_METRIC "+qioName+ ": InternalQueues :   "+internalQueueStatus;
 
         String line2 = "QIO_METRIC "+qioName+
                 ": Elements (In/Out): "+
@@ -112,7 +121,7 @@ public class QueueIOStatusService {
                 ": Bytes (In/Out)     "+
                 metric.getMetricReceivedBytes().getValue()+" - "+metric.getMetricProducedBytes().getValue();
 
-        builder.append(String.join("\n", line10, line1a, line1b, line1c, line1d, line2, line3)).append("\n");
+        builder.append(String.join("\n", line10, line1a, line1b, line1c, line1d, line1e, line2, line3)).append("\n");
     }
 
     private void delimiter(QueueIOService q, StringBuilder builder)
