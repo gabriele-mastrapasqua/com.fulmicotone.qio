@@ -1,32 +1,24 @@
 package com.fulmicotone.qio.factories;
 
 
-
 import com.fulmicotone.qio.executors.QueueIOExecutor;
 import com.fulmicotone.qio.interfaces.IQueueIOExecutor;
+import com.fulmicotone.qio.interfaces.IQueueIOExecutorFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 
-public class QueueIOExecutorFactory {
+public class QueueIOExecutorFactory implements IQueueIOExecutorFactory {
 
 
-    public static IQueueIOExecutor createExecutor(String name, int nThreads, int capacity)
+    public IQueueIOExecutor createExecutor(String name, int nThreads, int capacity)
     {
-
-        return createExecutor(name,nThreads, capacity,null);
-    }
-
-    public static IQueueIOExecutor createExecutor(String name,int nThreads, int capacity, Consumer<Thread> onThreadCreationCallback)
-    {
-
         return new QueueIOExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(capacity),
-                new QueueIOThreadFactory(name.toLowerCase(), onThreadCreationCallback),
+                new QueueIOThreadFactory(name.toLowerCase(), null),
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
