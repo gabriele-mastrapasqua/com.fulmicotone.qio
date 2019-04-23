@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -32,6 +33,9 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     protected IQueueIOExecutor singleExecutor;
     private Map<Integer, QueueIOQ<E>> internalQueues = new HashMap<>();
     private Map<Integer, AtomicLong> internalQueuesReceivedElements = new HashMap<>();
+
+    private IQueueIOExecutorFactory singleThreadExecutorFactory = new QueueIOExecutorFactory();
+    private IQueueIOExecutorFactory multiThreadExecutorFactory = new QueueIOExecutorFactory();
 
     private QueueIOMetric queueIOMetric;
     private int internalQueueThreadCreationIndex = 0;
@@ -70,6 +74,16 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
 
     public <I extends QueueIOService<E, T>> I withQueueIOMetric(QueueIOMetric metric){
         this.queueIOMetric = metric;
+        return (I)this;
+    }
+
+    public <I extends QueueIOService<E, T>> I withSingleThreadExecutorFactory(IQueueIOExecutorFactory executorFactory){
+        this.singleThreadExecutorFactory = executorFactory;
+        return (I)this;
+    }
+
+    public <I extends QueueIOService<E, T>> I withMultiThreadExecutorFactory(IQueueIOExecutorFactory executorFactory){
+        this.multiThreadExecutorFactory = executorFactory;
         return (I)this;
     }
 
@@ -149,11 +163,11 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
 
 
     protected IQueueIOExecutor initSingleThreadExecutor(){
-        return QueueIOExecutorFactory.createExecutor(getClass().getSimpleName()+"-st",1, 1_000_000);
+        return singleThreadExecutorFactory.createExecutor(getClass().getSimpleName()+"-st",1, 1_000_000);
     }
 
     private IQueueIOExecutor initMultiThreadExecutor(Integer consumingThreads, Integer queueSize){
-        return QueueIOExecutorFactory.createExecutor(getClass().getSimpleName()+"-mt", consumingThreads, queueSize);
+        return multiThreadExecutorFactory.createExecutor(getClass().getSimpleName()+"-mt", consumingThreads, queueSize);
     }
 
     private void initInternalQueues(Integer consumingThreads)
