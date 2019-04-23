@@ -28,19 +28,11 @@ public class QueueIOExecutor extends ThreadPoolExecutor implements IQueueIOExecu
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
-    @Override
-    public int getQueueLength() {
-        return super.getQueue().size();
-    }
 
     @Override
     public void exec(IQueueIOExecutorTask r) {
         submit((Runnable) r::run);
     }
-    public <I>void exec(IQueueIOIngestionTask<I> r, List<I> elms) {
-        submit(() -> {
-            r.ingest(elms);
-        });
-    }
+
 
 }
