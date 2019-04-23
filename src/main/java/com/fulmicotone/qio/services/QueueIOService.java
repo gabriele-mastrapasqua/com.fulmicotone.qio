@@ -36,7 +36,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     private QueueIOMetric queueIOMetric;
     private int internalQueueThreadCreationIndex = 0;
     private int maxInternalThreads;
-    private int internalQueuesMaxSize = 10_000_000;
+    private int internalQueuesMaxSize = 20_000_000;
     private int multiThreadQueueSize;
     private int chunkSize = 100;
     private int flushTimeout = 30;
@@ -109,6 +109,21 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
         return getClass().getSimpleName()+"<"+getInputClass().getSimpleName()+">";
     }
 
+    public int getInternalQueueSize(int n)
+    {
+        QueueIOQ<E> queue = internalQueues.get(n);
+
+        if(internalQueues.get(n) == null){
+            return -1;
+        }
+
+        return queue.size();
+    }
+
+    public int getInternalQueuesMaxSize() {
+        return internalQueuesMaxSize;
+    }
+
     private void initNewConsumerThread(Integer maxThreads)
     {
 
@@ -134,7 +149,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
 
 
     protected IQueueIOExecutor initSingleThreadExecutor(){
-        return QueueIOExecutorFactory.createExecutor(getClass().getSimpleName()+"-st",1, 1000000);
+        return QueueIOExecutorFactory.createExecutor(getClass().getSimpleName()+"-st",1, 1_000_000);
     }
 
     private IQueueIOExecutor initMultiThreadExecutor(Integer consumingThreads, Integer queueSize){
