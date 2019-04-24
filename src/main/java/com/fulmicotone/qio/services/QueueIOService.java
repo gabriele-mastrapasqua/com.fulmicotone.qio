@@ -376,8 +376,8 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
 
     @Override
     public void updateMetrics() {
-        queueIOMetric.setMetricMultiExecutorQueueSize(multiThreadExecutor.getQueue());
-        queueIOMetric.setMetricInputQueueSizeValue(singleExecutor.getQueue());
+        queueIOMetric.setMetricMultiExecutorQueueSize(multiThreadExecutor.getQueueSize());
+        queueIOMetric.setMetricInputQueueSizeValue(singleExecutor.getQueueSize());
         queueIOMetric.setMetricInternalQueuesAVGSize(internalQueues
                 .entrySet()
                 .stream()

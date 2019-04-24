@@ -30,6 +30,11 @@ public class QueueIOExecutor extends ThreadPoolExecutor implements IQueueIOExecu
 
 
     @Override
+    public int getQueueSize() {
+        return this.getQueue().size();
+    }
+
+    @Override
     public void exec(IQueueIOExecutorTask r) {
         submit((Runnable) r::run);
     }
