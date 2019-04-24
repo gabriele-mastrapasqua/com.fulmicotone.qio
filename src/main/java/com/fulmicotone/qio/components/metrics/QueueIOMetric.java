@@ -67,16 +67,16 @@ public class QueueIOMetric {
         return metricReceivedBytes;
     }
 
-    public void setMetricInputQueueSizeValue(BlockingQueue queue){
-        metricInputQueueSize.setValue(queue.size());
+    public void setMetricInputQueueSizeValue(Integer size){
+        metricInputQueueSize.setValue(size);
     }
 
-    public void setMetricSingleExecutorQueueSize(BlockingQueue queue){
-        metricSingleExecutorQueueSize.setValue(queue.size());
+    public void setMetricSingleExecutorQueueSize(Integer size){
+        metricSingleExecutorQueueSize.setValue(size);
     }
 
-    public void setMetricMultiExecutorQueueSize(BlockingQueue queue){
-        metricMultiExecutorQueueSize.setValue(queue.size());
+    public void setMetricMultiExecutorQueueSize(Integer size){
+        metricMultiExecutorQueueSize.setValue(size);
     }
 
     public void setMetricInternalQueuesAVGSize(List<QueueIOQ> queues){

@@ -29,9 +29,10 @@ public class QueueIOStealExecutor extends ForkJoinPool implements IQueueIOExecut
     }
 
     @Override
-    public BlockingQueue getQueue() {
-        return null;
+    public int getQueueSize() {
+        return (int)this.getQueuedTaskCount();
     }
+
 
     @Override
     public void exec(IQueueIOExecutorTask r) {
