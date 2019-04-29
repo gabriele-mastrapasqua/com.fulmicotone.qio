@@ -268,8 +268,9 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                     }
                     while (collection.size() < chunkSize);
 
-
-                    ingestionTask.ingest(collection.stream().map(transformFunction).collect(Collectors.toList()));
+                    if(collection.size() > 0){
+                        ingestionTask.ingest(collection.stream().map(transformFunction).collect(Collectors.toList()));
+                    }
 
                 }
                 catch(Exception ex) {
@@ -316,7 +317,11 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                     while (isAccumulatorAvailable);
 
 
-                    ingestionTask.ingest(accumulator.getRecords());
+                    List<T> records = accumulator.getRecords();
+
+                    if(records.size() > 0){
+                        ingestionTask.ingest(records);
+                    }
 
 
                     accumulator = accumulatorFactory.build();
