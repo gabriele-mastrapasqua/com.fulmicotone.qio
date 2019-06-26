@@ -118,6 +118,10 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
         return clazz;
     }
 
+    protected OutputQueues getOutputQueues() {
+        return this.outputQueues;
+    }
+
     @Override
     public String getUniqueKey() {
         return getClass().getSimpleName()+"<"+getInputClass().getSimpleName()+">";
