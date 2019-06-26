@@ -118,7 +118,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
         return clazz;
     }
 
-    protected OutputQueues getOutputClass() {
+    protected OutputQueues getOutputQueues() {
         return this.outputQueues;
     }
 
