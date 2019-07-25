@@ -46,7 +46,7 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
         singleExecutor.execute(kclWorker);
     }
 
-    private boolean stopKCL(){
+    public boolean stopKCL(){
         try {
             kclWorker.startGracefulShutdown().get(60, TimeUnit.SECONDS);
             kclWorker = null;
@@ -57,7 +57,7 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
         }
     }
 
-    private boolean isKCLRunning(){
+    public boolean isKCLRunning(){
         return kclWorker == null;
     }
 
