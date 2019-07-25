@@ -2,14 +2,13 @@ package com.fulmicotone.qio.services;
 
 
 import com.fulmicotone.qio.components.metrics.QueueIOMetric;
+import com.fulmicotone.qio.interfaces.IQueueIOStatusServiceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,6 +16,7 @@ import java.util.stream.IntStream;
 
 public class QueueIOStatusService {
 
+    private List<IQueueIOStatusServiceListener> listeners = new ArrayList<>();
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private Set<QueueIOService> queueIOServices = new HashSet<>();
@@ -45,11 +45,17 @@ public class QueueIOStatusService {
     }
 
 
-    public void updateCloudWatchMetrics() {
+    public void addListener(IQueueIOStatusServiceListener listener){
+        listeners.add(listener);
+    }
 
+    public void updateCloudWatchMetrics() {
         queueIOServices
                 .forEach(QueueIOService::updateMetrics);
+    }
 
+    public void tick(){
+        listeners.forEach(s -> s.accept(queueIOServices));
     }
 
 

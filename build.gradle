@@ -27,9 +27,6 @@ test {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.5'
-}
 
 repositories {
     mavenCentral()
@@ -49,5 +46,7 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
     compile group: 'com.netflix.servo', name: 'servo-aws', version: '0.12.16'
+    compile group: 'com.netflix.servo', name: 'servo-core', version: '0.12.26'
+
     compile "com.evanlennick:retry4j:0.15.0"
 }
