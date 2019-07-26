@@ -63,7 +63,7 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
     }
 
     public boolean isKCLRunning(){
-        return kclWorker == null;
+        return kclWorker != null;
     }
 
     @Override
