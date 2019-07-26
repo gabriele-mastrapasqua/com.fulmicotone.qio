@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -49,6 +49,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     private boolean byteBatchingEnabled = false;
     private IQueueIOAccumulatorFactory<E, T> accumulatorFactory;
     private IQueueIOTransform<E, T> transformFunction;
+    private Future<?> consumingTask;
 
 
 
@@ -113,12 +114,14 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
         return inputQueue;
     }
 
+
+
     @Override
     public Class<E> getInputClass() {
         return clazz;
     }
 
-    protected OutputQueues getOutputQueues() {
+    public OutputQueues getOutputQueues() {
         return this.outputQueues;
     }
 
@@ -180,17 +183,33 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
         IntStream.range(0, consumingThreads).forEach(i -> internalQueuesReceivedElements.put(i, new AtomicLong()));
     }
 
+    private void initExecutorsIfNeeded(){
+        if(multiThreadExecutor == null){
+            this.multiThreadExecutor = initMultiThreadExecutor(maxInternalThreads, multiThreadQueueSize);
+            initInternalQueues(maxInternalThreads);
+            initNewConsumerThread(maxInternalThreads);
+        }
+
+        if(this.singleExecutor == null){
+            this.singleExecutor = initSingleThreadExecutor();
+        }
+    }
 
 
     public void startConsuming()
     {
-        this.multiThreadExecutor = initMultiThreadExecutor(maxInternalThreads, multiThreadQueueSize);
+        initExecutorsIfNeeded();
+        consumingTask = singleExecutor.exec(buildConsumingTask());
+    }
 
-        initInternalQueues(maxInternalThreads);
-        initNewConsumerThread(maxInternalThreads);
+    public void stopConsuming(){
+        consumingTask.cancel(true);
+        consumingTask = null;
+    }
 
-        singleExecutor = initSingleThreadExecutor();
-        singleExecutor.exec(buildMainTask());
+
+    public boolean isRunning(){
+        return consumingTask != null;
     }
 
 
@@ -201,7 +220,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
     }
 
 
-    private IQueueIOExecutorTask buildMainTask()
+    private IQueueIOExecutorTask buildConsumingTask()
     {
         return () -> {
             while (!Thread.currentThread().isInterrupted())
@@ -213,7 +232,7 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
                     sendObjectToInternalQueue(elm);
                 }
                 catch(Exception ex) {
-                    log.error("buildMainTask error {}", ex.toString());
+                    log.error("buildConsumingTask error {}", ex.toString());
                 }
             }
             return null;

@@ -6,6 +6,11 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.services.QueueIOService;
 
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 
 /**
  * This is a pure wrapper to KclWorker from AWS, using QIO services could be an overhead because KclWorker is single-thread by design.
@@ -22,11 +27,11 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
         super(Void.class, 1, 1, null, t -> t);
         this.recordProcessorFactory = recordProcessorFactory;
         this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
-        init();
+        startKCL();
     }
 
 
-    private void init()
+    public void startKCL()
     {
         this.kclWorker = new Worker.Builder()
                 .recordProcessorFactory(recordProcessorFactory)
@@ -39,6 +44,26 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
         singleExecutor = initSingleThreadExecutor();
         multiThreadExecutor = initSingleThreadExecutor();
         singleExecutor.execute(kclWorker);
+    }
+
+    public boolean stopKCL(){
+        try {
+            kclWorker.startGracefulShutdown().get(60, TimeUnit.SECONDS);
+            kclWorker = null;
+            return true;
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return isKCLRunning();
+    }
+
+    public boolean isKCLRunning(){
+        return kclWorker != null;
     }
 
     @Override

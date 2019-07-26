@@ -34,6 +34,21 @@ public class OutputQueues {
             return Optional.of(queues);
     }
 
+
+    public boolean containsQueue(Class<?> clazz, Queue<?> queue)
+    {
+        if(queueMap.get(clazz) == null)
+            return false;
+
+        return queueMap
+                .get(clazz)
+                .stream()
+                .filter(Objects::nonNull)
+                .anyMatch(q -> q.hashCode() == queue.hashCode());
+    }
+
+
+
     public <I>void pushInQueue(Class<I> clazz, I elm)
     {
         getQueues(clazz).ifPresent(queues -> queues.forEach(q -> q.add(elm)));
