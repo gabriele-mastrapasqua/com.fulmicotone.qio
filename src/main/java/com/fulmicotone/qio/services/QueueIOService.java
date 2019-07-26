@@ -114,12 +114,14 @@ public abstract class QueueIOService<E, T> implements IQueueIOService<E, T> {
         return inputQueue;
     }
 
+
+
     @Override
     public Class<E> getInputClass() {
         return clazz;
     }
 
-    protected OutputQueues getOutputQueues() {
+    public OutputQueues getOutputQueues() {
         return this.outputQueues;
     }
 
