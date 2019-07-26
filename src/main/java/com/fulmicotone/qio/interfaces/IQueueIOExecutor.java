@@ -1,10 +1,12 @@
 package com.fulmicotone.qio.interfaces;
 
+import java.util.concurrent.Future;
+
 public interface IQueueIOExecutor {
 
     int getActiveCount();
     int getMaximumPoolSize();
     int getQueueSize();
-    void exec(IQueueIOExecutorTask r);
+    Future<?> exec(IQueueIOExecutorTask r);
     void execute(Runnable r);
 }

@@ -35,8 +35,9 @@ public class QueueIOStealExecutor extends ForkJoinPool implements IQueueIOExecut
 
 
     @Override
-    public void exec(IQueueIOExecutorTask r) {
-        submit((Runnable) r::run);
+    public Future<?> exec(IQueueIOExecutorTask r) {
+        Runnable run = r::run;
+        return submit(run);
     }
 
 
