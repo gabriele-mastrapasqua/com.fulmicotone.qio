@@ -103,7 +103,7 @@ public class QueueIOStatusService {
     private void logQIO(QueueIOService q, StringBuilder builder)
     {
         QueueIOMetric metric = q.getMetrics();
-        String qioName = q.getUniqueKey();
+        String qioName = q.getUniqueKey() + ((q.isRunning()) ? " (Running)" : " (Suspended)");
 
         // INTERNAL QUEUE STATUS
         String internalQueueStatus = IntStream.range(0, q.getInternalThreads())

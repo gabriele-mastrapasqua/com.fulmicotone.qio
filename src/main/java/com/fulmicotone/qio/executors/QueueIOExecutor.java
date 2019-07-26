@@ -35,9 +35,11 @@ public class QueueIOExecutor extends ThreadPoolExecutor implements IQueueIOExecu
     }
 
     @Override
-    public void exec(IQueueIOExecutorTask r) {
-        submit((Runnable) r::run);
+    public Future<?> exec(IQueueIOExecutorTask r) {
+        Runnable run = r::run;
+        return submit(run);
     }
+
 
 
 }
