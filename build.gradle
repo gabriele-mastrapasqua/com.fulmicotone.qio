@@ -1,6 +1,6 @@
 group 'com.fulmicotone'
 
-version '0.0.23'
+version '0.0.24'
 
 apply plugin: 'java'
 apply plugin: 'idea'
