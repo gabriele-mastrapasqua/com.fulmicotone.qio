@@ -3,6 +3,7 @@ package com.fulmicotone.qio.utils.kinesis.streams.consumer;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.services.QueueIOService;
 import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.RecordProcessorFactory;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
@@ -30,15 +31,16 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
     private ConfigsBuilder configsBuilder;
     private String streamName;
     private String applicationName;
-    private Region region;
+    private Region region = Region.US_EAST_1;
+    private int maxConcurrency = 100;
 
-
-    public KinesisConsumerQIOService(ShardRecordProcessorFactory recordProcessorFactory, String streamName, String applicationName, Region region) {
+    public KinesisConsumerQIOService(ShardRecordProcessorFactory recordProcessorFactory, String streamName, String applicationName, Region region, int maxConcurrency) {
         super(Void.class, 1, 1, null, t -> t);
         this.recordProcessorFactory = recordProcessorFactory;
         this.streamName=streamName;
         this.applicationName=applicationName;
         this.region=region;
+        this.maxConcurrency = maxConcurrency;
         startKCL();
     }
 
@@ -46,7 +48,12 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
     public void startKCL()
     {
         // create async v2 client using KinesisClientUtil - see: https://docs.amazonaws.cn/en_us/streams/latest/dev/kcl-migration.html#worker-migration
-        KinesisAsyncClient kinesisClient = KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder().region(region));
+        // as suggested by documentation, set max concurrency high enough to the correct usage of the client
+        KinesisAsyncClient kinesisClient = KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder()
+                .httpClientBuilder(NettyNioAsyncHttpClient.builder()
+                    .maxConcurrency(this.maxConcurrency))
+                .region(region)
+        );
         DynamoDbAsyncClient dynamoClient = DynamoDbAsyncClient.builder().region(region).build();
         CloudWatchAsyncClient cloudWatchClient = CloudWatchAsyncClient.builder().region(region).build();
 

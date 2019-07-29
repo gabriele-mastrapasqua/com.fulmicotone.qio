@@ -160,7 +160,8 @@ public class TestKinesisProducerConsumer {
                         new LinkedBlockingQueue<Runnable>()) )
                 ;
 
-        KinesisConsumerQIOService kinesisConsumerQIOService = new KinesisConsumerQIOService(recordProcessorFactory, inputStreamName, applicationName, Region.US_EAST_1);
+        KinesisConsumerQIOService kinesisConsumerQIOService = new KinesisConsumerQIOService(recordProcessorFactory, inputStreamName,
+                applicationName, Region.US_EAST_1, 100);
         kinesisConsumerQIOService.startConsuming();
 
 
