@@ -1,9 +1,10 @@
 package com.fulmicotone.qio.utils.kinesis.streams.consumer.v1;
 
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 import com.amazonaws.services.kinesis.model.Record;
 import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
+import software.amazon.kinesis.processor.ShardRecordProcessor;
+import software.amazon.kinesis.processor.ShardRecordProcessorFactory;
+import software.amazon.kinesis.retrieval.KinesisClientRecord;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +15,7 @@ import java.util.function.Consumer;
  * Created by enryold on 20/12/16.
  */
 
-public class RecordProcessorFactory implements IRecordProcessorFactory {
+public class RecordProcessorFactory implements ShardRecordProcessorFactory {
 
 
     private int backoffTime;
@@ -22,7 +23,7 @@ public class RecordProcessorFactory implements IRecordProcessorFactory {
     private int checkpointInterval;
     private ThreadPoolExecutor threadPoolExecutor;
     private Set<KCLConsumerEntry> possibleOutputs;
-    private Consumer<Record> recordConsumer;
+    private Consumer<KinesisClientRecord> recordConsumer;
 
 
     public RecordProcessorFactory withPossibleOutputs(Set<KCLConsumerEntry> map)
@@ -55,7 +56,7 @@ public class RecordProcessorFactory implements IRecordProcessorFactory {
         return this;
     }
 
-    public RecordProcessorFactory withProcessRecordCallback(Consumer<Record> recordCallback)
+    public RecordProcessorFactory withProcessRecordCallback(Consumer<KinesisClientRecord> recordCallback)
     {
         this.recordConsumer = recordCallback;
         return this;
@@ -63,8 +64,7 @@ public class RecordProcessorFactory implements IRecordProcessorFactory {
 
 
     @Override
-    public IRecordProcessor createProcessor()
-    {
+    public ShardRecordProcessor shardRecordProcessor() {
         return new RecordProcessor()
                 .withPossibileOutputs(new HashSet<>(possibleOutputs))
                 .withBackoffTime(backoffTime)

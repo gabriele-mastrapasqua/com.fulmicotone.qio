@@ -1,12 +1,18 @@
 package com.fulmicotone.qio.utils.kinesis.streams.consumer;
 
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.services.QueueIOService;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.RecordProcessorFactory;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
+import software.amazon.kinesis.common.ConfigsBuilder;
+import software.amazon.kinesis.common.KinesisClientUtil;
+import software.amazon.kinesis.coordinator.Scheduler;
+import software.amazon.kinesis.processor.ShardRecordProcessorFactory;
 
-import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -19,37 +25,56 @@ import java.util.concurrent.TimeoutException;
 */
 public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
 
-    private IRecordProcessorFactory recordProcessorFactory;
-    private KinesisClientLibConfiguration kinesisClientLibConfiguration;
-    private Worker kclWorker;
+    private ShardRecordProcessorFactory recordProcessorFactory;
+    private Scheduler scheduler;
+    private ConfigsBuilder configsBuilder;
+    private String streamName;
+    private String applicationName;
+    private Region region;
 
-    public KinesisConsumerQIOService(IRecordProcessorFactory recordProcessorFactory, KinesisClientLibConfiguration kinesisClientLibConfiguration) {
+
+    public KinesisConsumerQIOService(ShardRecordProcessorFactory recordProcessorFactory, String streamName, String applicationName, Region region) {
         super(Void.class, 1, 1, null, t -> t);
         this.recordProcessorFactory = recordProcessorFactory;
-        this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
+        this.streamName=streamName;
+        this.applicationName=applicationName;
+        this.region=region;
         startKCL();
     }
 
 
     public void startKCL()
     {
-        this.kclWorker = new Worker.Builder()
-                .recordProcessorFactory(recordProcessorFactory)
-                .config(kinesisClientLibConfiguration)
-                .build();
+        // create async v2 client using KinesisClientUtil - see: https://docs.amazonaws.cn/en_us/streams/latest/dev/kcl-migration.html#worker-migration
+        KinesisAsyncClient kinesisClient = KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder().region(region));
+        DynamoDbAsyncClient dynamoClient = DynamoDbAsyncClient.builder().region(region).build();
+        CloudWatchAsyncClient cloudWatchClient = CloudWatchAsyncClient.builder().region(region).build();
+
+        this.configsBuilder = new ConfigsBuilder(streamName, applicationName, kinesisClient, dynamoClient, cloudWatchClient,
+                UUID.randomUUID().toString(), this.recordProcessorFactory);
+
+        this.scheduler = new Scheduler(
+                configsBuilder.checkpointConfig(),
+                configsBuilder.coordinatorConfig(),
+                configsBuilder.leaseManagementConfig(),
+                configsBuilder.lifecycleConfig(),
+                configsBuilder.metricsConfig(),
+                configsBuilder.processorConfig(),
+                configsBuilder.retrievalConfig()
+        );
     }
 
     @Override
     public void startConsuming() {
         singleExecutor = initSingleThreadExecutor();
         multiThreadExecutor = initSingleThreadExecutor();
-        singleExecutor.execute(kclWorker);
+        singleExecutor.execute(scheduler);
     }
 
     public boolean stopKCL(){
         try {
-            kclWorker.startGracefulShutdown().get(60, TimeUnit.SECONDS);
-            kclWorker = null;
+            scheduler.startGracefulShutdown().get(60, TimeUnit.SECONDS);
+            scheduler = null;
             return true;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
@@ -63,7 +88,7 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
     }
 
     public boolean isKCLRunning(){
-        return kclWorker != null;
+        return scheduler != null;
     }
 
     @Override
@@ -74,6 +99,6 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        kclWorker.shutdown();
+        scheduler.shutdown();
     }
 }

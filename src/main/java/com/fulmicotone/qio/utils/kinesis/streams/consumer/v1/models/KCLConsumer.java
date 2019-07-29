@@ -29,7 +29,7 @@ public class KCLConsumer<T, O>
         this.destinationQueue = destinationQueue;
         this.clazz = clazz;
         this.friendlyName = friendlyName;
-        this.transform = (IKinesisDataTransform<T, T>) tOpt -> tOpt.map(Collections::singletonList);
+        this.transform = (IKinesisDataTransform<T, T>) tOpt ->  tOpt.map(Collections::singletonList);
     }
 
     public KCLConsumer(IKinesisListDecoder<T> decoder, IKinesisDataTransform<T, O> transform, Queue<O> destinationQueue, Class<T> clazz, String friendlyName)

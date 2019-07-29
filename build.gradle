@@ -38,11 +38,12 @@ repositories {
 }
 
 dependencies {
+    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
     testCompile  "org.springframework.boot:spring-boot-starter-test:1.5.7.RELEASE"
     testCompile group: 'com.amazonaws', name: 'aws-java-sdk-cloudwatch', version: '1.11.513'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-kinesis', version: '1.11.534'
     compile group: 'com.amazonaws', name: 'amazon-kinesis-producer', version: '0.12.11'
-    compile group: 'com.amazonaws', name: 'amazon-kinesis-client', version: '1.9.1'
+    compile 'software.amazon.kinesis:amazon-kinesis-client:2.2.1'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
     compile group: 'com.netflix.servo', name: 'servo-aws', version: '0.12.16'

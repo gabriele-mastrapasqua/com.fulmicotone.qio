@@ -1,16 +1,17 @@
 package com.fulmicotone.qio.utils.kinesis.streams.consumer.v1;
 
-import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
-import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
-import com.amazonaws.services.kinesis.clientlibrary.exceptions.ThrottlingException;
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorCheckpointer;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
 import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumer;
 import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.kinesis.exceptions.InvalidStateException;
+import software.amazon.kinesis.exceptions.ShutdownException;
+import software.amazon.kinesis.exceptions.ThrottlingException;
+import software.amazon.kinesis.lifecycle.events.*;
+import software.amazon.kinesis.processor.RecordProcessorCheckpointer;
+import software.amazon.kinesis.processor.ShardRecordProcessor;
+import software.amazon.kinesis.retrieval.KinesisClientRecord;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.function.Consumer;
 /**
  * Created by enryold on 20/12/16.
  */
-public class RecordProcessor implements IRecordProcessor {
+public class RecordProcessor implements ShardRecordProcessor {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -30,7 +31,7 @@ public class RecordProcessor implements IRecordProcessor {
     private int retriesNumber;
     private int checkpointInterval;
     private ThreadPoolExecutor threadPoolExecutor;
-    private Consumer<Record> recordConsumer;
+    private Consumer<KinesisClientRecord> recordConsumer;
 
 
     private String shardId;
@@ -68,7 +69,7 @@ public class RecordProcessor implements IRecordProcessor {
         return this;
     }
 
-    public RecordProcessor withProcessRecordCallback(Consumer<Record> recordCallback)
+    public RecordProcessor withProcessRecordCallback(Consumer<KinesisClientRecord> recordCallback)
     {
         this.recordConsumer = recordCallback;
         return this;
@@ -76,14 +77,19 @@ public class RecordProcessor implements IRecordProcessor {
 
 
     @Override
-    public void initialize(String shardId) {
-
+    public void initialize(InitializationInput initializationInput) {
+        String shardId = initializationInput.shardId();
         log.debug("Initializing with shard: "+shardId);
         this.shardId = shardId;
     }
 
     @Override
-    public void processRecords(List<Record> records, IRecordProcessorCheckpointer checkpointer) {
+    public void processRecords(ProcessRecordsInput processRecordsInput) {
+
+        List<KinesisClientRecord> records = processRecordsInput.records();
+        RecordProcessorCheckpointer checkpointer = processRecordsInput.checkpointer();
+
+
         log.debug("Processing " + records.size() + " records from " + shardId);
 
         // Process records and perform all exception handling.
@@ -101,8 +107,8 @@ public class RecordProcessor implements IRecordProcessor {
      *
      * @param records Data records to be processed.
      */
-    private void processRecordsWithRetries(List<Record> records) {
-        for (Record record : records) {
+    private void processRecordsWithRetries(List<KinesisClientRecord> records) {
+        for (KinesisClientRecord record : records) {
             boolean processedSuccessfully = false;
             for (int i = 0; i < retriesNumber; i++) {
                 try
@@ -134,14 +140,14 @@ public class RecordProcessor implements IRecordProcessor {
      *
      * @param record The record to be processed.
      */
-    private void processSingleRecord(Record record) {
+    private void processSingleRecord(KinesisClientRecord record) {
 
-        List<KCLConsumer> list = this.possibileOutputs.get(record.getPartitionKey());
+        List<KCLConsumer> list = this.possibileOutputs.get(record.partitionKey());
 
         if(list == null)
             return;
 
-        log.debug("Received new object from partition key: "+record.getPartitionKey()+" with sequence number: "+record.getSequenceNumber());
+        log.debug("Received new object from partition key: "+record.partitionKey()+" with sequence number: "+record.sequenceNumber());
 
         if(threadPoolExecutor == null)
             process(record, list);
@@ -151,32 +157,40 @@ public class RecordProcessor implements IRecordProcessor {
     }
 
 
-    private void process(Record record, List<KCLConsumer> list)
+    private void process(KinesisClientRecord record, List<KCLConsumer> list)
     {
         list.forEach(e -> {
             if(recordConsumer != null) { recordConsumer.accept(record); }
-            e.putInQueue(record.getData());
-                    log.debug("Object " + record.getSequenceNumber() + " with class ["+e.getClassName()+"] send to ["+e.getFriendlyName()+"] queue successfully!");
+            e.putInQueue(record.data());
+                    log.debug("Object " + record.sequenceNumber() + " with class ["+e.getClassName()+"] send to ["+e.getFriendlyName()+"] queue successfully!");
                 }
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
-    public void shutdown(IRecordProcessorCheckpointer checkpointer, ShutdownReason reason) {
-        log.debug("Shutting down record processor for shard: " + shardId);
-        // Important to checkpoint after reaching end of shard, so we can start processing data from child shards.
-        if (reason == ShutdownReason.TERMINATE) {
-            checkpoint(checkpointer);
-        }
+    public void leaseLost(LeaseLostInput leaseLostInput) {
+
     }
+
+    @Override
+    public void shardEnded(ShardEndedInput shardEndedInput) {
+        log.debug("Shard ended down record processor for shard: " + shardId);
+        checkpoint(shardEndedInput.checkpointer());
+    }
+
+    @Override
+    public void shutdownRequested(ShutdownRequestedInput shutdownRequestedInput) {
+        log.debug("Shutting down record processor for shard: " + shardId);
+        checkpoint(shutdownRequestedInput.checkpointer());
+    }
+
 
     /** Checkpoint with retries.
      * @param checkpointer
      */
-    private void checkpoint(IRecordProcessorCheckpointer checkpointer) {
+    private void checkpoint(RecordProcessorCheckpointer checkpointer) {
         log.debug("Checkpointing shard " + shardId);
         for (int i = 0; i < retriesNumber; i++) {
             try {
