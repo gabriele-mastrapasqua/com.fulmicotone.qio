@@ -1,8 +1,5 @@
 package com.fulmicotone.qio;
 
-import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
-import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
-import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fulmicotone.qio.example.models.Intent;
@@ -17,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.util.Assert;
+import software.amazon.awssdk.services.firehose.model.Record;
 
 import java.util.*;
 import java.util.concurrent.LinkedTransferQueue;
@@ -116,7 +114,7 @@ public class TestFirehoseQIO extends TestUtils{
             // EXPECT THAT EVERY CHUNK HAS A TOTAL SUM OF BYTES < byteSizeLimit
             Assert.isTrue(elementsProduced
                     .stream()
-                    .mapToInt(s -> s.stream().mapToInt(record -> record.getData().array().length).sum())
+                    .mapToInt(s -> s.stream().mapToInt(record -> record.data().asByteArray().length).sum())
                     .filter(sum -> sum < byteSizeLimit)
                     .count() == elementsProduced.size(), "Size > "+byteSizeLimit);
 
@@ -124,7 +122,7 @@ public class TestFirehoseQIO extends TestUtils{
             Assert.isTrue(elementsProduced
                     .stream()
                     .flatMap(Collection::stream)
-                    .filter(r -> r.getData().array().length <= recordMaxSize)
+                    .filter(r -> r.data().asByteArray().length <= recordMaxSize)
                     .count() == elementsProduced.stream().mapToLong(Collection::size).sum(), "Single record have size > "+recordMaxSize);
 
         } catch (InterruptedException e) {
@@ -177,7 +175,7 @@ public class TestFirehoseQIO extends TestUtils{
             // EXPECT THAT EVERY CHUNK HAS A TOTAL SUM OF BYTES < byteSizeLimit
             Assert.isTrue(elementsProduced
                     .stream()
-                    .mapToInt(s -> s.stream().mapToInt(record -> record.getData().array().length).sum())
+                    .mapToInt(s -> s.stream().mapToInt(record -> record.data().asByteArray().length).sum())
                     .filter(sum -> sum < byteSizeLimit)
                     .count() == elementsProduced.size(), "Size > "+byteSizeLimit);
 
@@ -185,7 +183,7 @@ public class TestFirehoseQIO extends TestUtils{
             Assert.isTrue(elementsProduced
                     .stream()
                     .flatMap(Collection::stream)
-                    .filter(r -> r.getData().array().length <= recordMaxSize)
+                    .filter(r -> r.data().asByteArray().length <= recordMaxSize)
                     .count() == elementsProduced.stream().mapToLong(Collection::size).sum(), "Single record have size > "+recordMaxSize);
 
         } catch (InterruptedException e) {
@@ -238,7 +236,7 @@ public class TestFirehoseQIO extends TestUtils{
             // EXPECT THAT EVERY CHUNK HAS A TOTAL SUM OF BYTES < byteSizeLimit
             Assert.isTrue(elementsProduced
                     .stream()
-                    .mapToInt(s -> s.stream().mapToInt(record -> record.getData().array().length).sum())
+                    .mapToInt(s -> s.stream().mapToInt(record -> record.data().asByteArray().length).sum())
                     .filter(sum -> sum < byteSizeLimit)
                     .count() == elementsProduced.size(), "Size > "+byteSizeLimit);
 
@@ -246,7 +244,7 @@ public class TestFirehoseQIO extends TestUtils{
             Assert.isTrue(elementsProduced
                     .stream()
                     .flatMap(Collection::stream)
-                    .filter(r -> r.getData().array().length <= recordMaxSize)
+                    .filter(r -> r.data().asByteArray().length <= recordMaxSize)
                     .count() == elementsProduced.stream().mapToLong(Collection::size).sum(), "Single record have size > "+recordMaxSize);
 
         } catch (InterruptedException e) {
@@ -299,7 +297,7 @@ public class TestFirehoseQIO extends TestUtils{
             // EXPECT THAT EVERY CHUNK HAS A TOTAL SUM OF BYTES < byteSizeLimit
             Assert.isTrue(elementsProduced
                     .stream()
-                    .mapToInt(s -> s.stream().mapToInt(record -> record.getData().array().length).sum())
+                    .mapToInt(s -> s.stream().mapToInt(record -> record.data().asByteArray().length).sum())
                     .filter(sum -> sum < byteSizeLimit)
                     .count() == elementsProduced.size(), "Size > "+byteSizeLimit);
 
@@ -307,7 +305,7 @@ public class TestFirehoseQIO extends TestUtils{
             Assert.isTrue(elementsProduced
                     .stream()
                     .flatMap(Collection::stream)
-                    .filter(r -> r.getData().array().length <= recordMaxSize)
+                    .filter(r -> r.data().asByteArray().length <= recordMaxSize)
                     .count() == elementsProduced.stream().mapToLong(Collection::size).sum(), "Single record have size > "+recordMaxSize);
 
         } catch (InterruptedException e) {

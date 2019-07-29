@@ -1,8 +1,8 @@
 package com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders;
 
 
-import com.amazonaws.services.kinesis.model.HashKeyRange;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
+import software.amazon.awssdk.services.kinesis.model.HashKeyRange;
 
 import java.util.SplittableRandom;
 import java.util.stream.Collectors;
@@ -24,11 +24,11 @@ public class ExplicitShardKeyHelper implements IExplicitShardKeyHelper {
         this.shardId = shardId;
         this.range = range;
 
-        int upperSubstring = range.getEndingHashKey().length()-LESS_SIGNIFICANT_LENGTH;
-        int lowerSubstring = range.getStartingHashKey().length()-LESS_SIGNIFICANT_LENGTH;
+        int upperSubstring = range.endingHashKey().length()-LESS_SIGNIFICANT_LENGTH;
+        int lowerSubstring = range.startingHashKey().length()-LESS_SIGNIFICANT_LENGTH;
 
-        this.upperMostSignificant = Long.valueOf(range.getEndingHashKey().substring(0, upperSubstring))+1;
-        this.lowerMostSignificant = range.getStartingHashKey().equals("0") ? 0L : Long.valueOf(range.getStartingHashKey().substring(0, lowerSubstring))-1;
+        this.upperMostSignificant = Long.valueOf(range.endingHashKey().substring(0, upperSubstring))+1;
+        this.lowerMostSignificant = range.startingHashKey().equals("0") ? 0L : Long.valueOf(range.startingHashKey().substring(0, lowerSubstring))-1;
     }
 
     public String getShardId() {

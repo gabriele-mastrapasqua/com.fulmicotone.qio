@@ -2,8 +2,6 @@ package com.fulmicotone.qio;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
 import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
 import com.fulmicotone.qio.example.models.DomainCount;
@@ -24,13 +22,20 @@ import com.fulmicotone.qio.utils.kinesis.streams.producer.KinesisStreamsQIOServi
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsByteMapper;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.ExplicitShardKeyHelper;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.HashProviderFactory;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
+import software.amazon.kinesis.common.KinesisClientUtil;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -39,9 +44,9 @@ import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
 public class TestKinesisProducerConsumer {
-    private BasicAWSCredentials credentials = new BasicAWSCredentials(
+    private AwsBasicCredentials credentials = AwsBasicCredentials.create(
             System.getenv("AWS_ACCESS_KEY_ID"),
-            System.getenv("AWS_SECRET_KEY") );
+            System.getenv("AWS_SECRET_KEY"));
     private String applicationName = System.getenv("KINESIS_APPLICATION_NAME");
     private String inputStreamName = System.getenv("KINESIS_STREAM_NAME");
     private String partitionKey = System.getenv("KINESIS_PARTITION_KEY");
@@ -77,19 +82,25 @@ public class TestKinesisProducerConsumer {
                 .setMaxConnections(24)
                 .setRequestTimeout(10000)
                 .setRecordTtl(180000)
-                .setCredentialsProvider(new AWSStaticCredentialsProvider(credentials))
+                .setCredentialsProvider(new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(
+                            System.getenv("AWS_ACCESS_KEY_ID"),
+                            System.getenv("AWS_SECRET_KEY"))
+        ))
                 .setMetricsLevel(kinesisMetricLevel)
                 .setRegion(region);
 
         return new KinesisProducer(config);
     }
 
-    public AmazonKinesis newKinesisClient() {
-        return AmazonKinesisClient
-                .builder()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion(region)
-                .build();
+    public KinesisAsyncClient newKinesisClient() {
+        return KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder()
+                /*.httpClientBuilder(NettyNioAsyncHttpClient.builder()
+                        .maxConcurrency(100))*/
+                .region(Region.US_EAST_1)
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+        );
+
     }
             
     // test kinesis producer and consumer
@@ -108,7 +119,7 @@ public class TestKinesisProducerConsumer {
                 new BasicKinesisStreamsByteMapper(),
                 new com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsAccumulatorLengthFunction<>());
 
-        AmazonKinesis amazonKinesis = newKinesisClient();
+        KinesisAsyncClient amazonKinesis = newKinesisClient();
         KinesisProducer kinesisProducer = kinesisProducer();
         HashProviderFactory hashProviderFactory = new HashProviderFactory(amazonKinesis, inputStreamName,
                 new RoundRobinStreamShardHelper());

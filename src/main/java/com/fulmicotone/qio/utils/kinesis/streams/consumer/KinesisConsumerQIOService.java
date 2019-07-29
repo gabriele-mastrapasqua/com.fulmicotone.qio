@@ -50,8 +50,8 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
         // create async v2 client using KinesisClientUtil - see: https://docs.amazonaws.cn/en_us/streams/latest/dev/kcl-migration.html#worker-migration
         // as suggested by documentation, set max concurrency high enough to the correct usage of the client
         KinesisAsyncClient kinesisClient = KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder()
-                .httpClientBuilder(NettyNioAsyncHttpClient.builder()
-                    .maxConcurrency(this.maxConcurrency))
+                /*.httpClientBuilder(NettyNioAsyncHttpClient.builder()
+                    .maxConcurrency(this.maxConcurrency))*/
                 .region(region)
         );
         DynamoDbAsyncClient dynamoClient = DynamoDbAsyncClient.builder().region(region).build();

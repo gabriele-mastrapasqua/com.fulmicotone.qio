@@ -1,6 +1,7 @@
 package com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces;
 
-import com.amazonaws.services.kinesisfirehose.model.Record;
+
+import software.amazon.awssdk.services.firehose.model.Record;
 
 import java.util.List;
 import java.util.function.BiFunction;

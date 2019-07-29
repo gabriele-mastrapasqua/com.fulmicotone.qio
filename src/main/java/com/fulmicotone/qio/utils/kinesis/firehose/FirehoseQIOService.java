@@ -1,9 +1,5 @@
 package com.fulmicotone.qio.utils.kinesis.firehose;
 
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClient;
-import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
-import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
-import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
@@ -11,16 +7,21 @@ import com.fulmicotone.qio.services.QueueIOService;
 import com.fulmicotone.qio.utils.kinesis.firehose.enums.PutRecordMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.firehose.FirehoseAsyncClient;
+import software.amazon.awssdk.services.firehose.model.PutRecordBatchRequest;
+import software.amazon.awssdk.services.firehose.model.PutRecordRequest;
+import software.amazon.awssdk.services.firehose.model.Record;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
 
     final Logger log = LoggerFactory.getLogger(this.getClass());
     private List<String> streamNames;
     private PutRecordMode putRecordMode = PutRecordMode.BATCH;
-    private AmazonKinesisFirehoseClient amazonKinesisFirehoseClient;
+    private FirehoseAsyncClient amazonKinesisFirehoseClient;
     private boolean logRequests = false;
 
 
@@ -41,7 +42,7 @@ public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
         return this;
     }
 
-    public FirehoseQIOService<I> withAmazonKinesisFirehoseClient(AmazonKinesisFirehoseClient amazonKinesisFirehoseClient){
+    public FirehoseQIOService<I> withAmazonKinesisFirehoseClient(FirehoseAsyncClient amazonKinesisFirehoseClient){
         this.amazonKinesisFirehoseClient = amazonKinesisFirehoseClient;
         return this;
     }
@@ -92,18 +93,19 @@ public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
 
         try
         {
-
-            PutRecordRequest putRecordRequest = new PutRecordRequest();
-            putRecordRequest.setDeliveryStreamName(streamName);
-            putRecordRequest.setRecord(record);
+            PutRecordRequest putRecordRequest = PutRecordRequest.builder()
+                    .deliveryStreamName(streamName)
+                    .record(record)
+                    .build()
+                    ;
             amazonKinesisFirehoseClient.putRecord(putRecordRequest);
 
             if(logRequests){
-                log.debug("PutRecord in stream "+streamName+" with hash "+record.hashCode()+" and of "+record.getData().array().length+" bytes");
+                log.debug("PutRecord in stream "+streamName+" with hash "+record.hashCode()+" and of "+record.data().asByteArray().length+" bytes");
             }
 
             producedObjectNotification(record);
-            producedBytesNotification(record.getData().array());
+            producedBytesNotification(record.data().asByteArray());
         }
         catch (Exception e)
         {
@@ -124,17 +126,19 @@ public class FirehoseQIOService<I> extends QueueIOService<I, Record> {
                 return;
             }
 
-            PutRecordBatchRequest putRecordRequest = new PutRecordBatchRequest();
-            putRecordRequest.setDeliveryStreamName(streamName);
-            putRecordRequest.setRecords(list);
+            PutRecordBatchRequest putRecordRequest = PutRecordBatchRequest.builder()
+                    .deliveryStreamName(streamName)
+                    .records(list)
+                    .build();
             amazonKinesisFirehoseClient.putRecordBatch(putRecordRequest);
 
             if(logRequests) {
-                log.debug("PutRecordBatch in stream "+streamName+" of "+list.size()+" records with hash "+list.hashCode()+" and size of "+list.stream().mapToInt(r -> r.getData().array().length).sum()+" bytes");
+                log.debug("PutRecordBatch in stream "+streamName+" of "+list.size()+" records with hash "+list.hashCode()+" and size of "+
+                        list.stream().mapToInt(r -> r.data().asByteArray().length).sum()+" bytes");
             }
 
             producedObjectsNotification(list);
-            list.forEach(f -> producedBytesNotification(f.getData().array()));
+            list.forEach(f -> producedBytesNotification(f.data().asByteArray()));
 
         }
         catch (Exception e)

@@ -1,10 +1,11 @@
 package com.fulmicotone.qio.utils.kinesis.firehose.accumulators.generic;
 
-import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseByteMapper;
 import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseRecordMapper;
 import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseStringMapper;
 import com.google.common.collect.Lists;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.firehose.model.Record;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -21,8 +22,10 @@ public class BasicFirehoseRecordMapper<I> implements IFirehoseRecordMapper<I> {
 
     private Record buildRecord(byte[] raw)
     {
-        Record record=new Record();
-        record.setData(ByteBuffer.wrap(raw));
+        Record record = Record
+                .builder()
+                .data(
+                        SdkBytes.fromByteBuffer(ByteBuffer.wrap(raw))) .build();
         return record;
     }
 

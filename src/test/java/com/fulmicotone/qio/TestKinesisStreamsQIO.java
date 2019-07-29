@@ -1,7 +1,5 @@
 package com.fulmicotone.qio;
 
-import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.model.HashKeyRange;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.KinesisStreamsQIOService;
@@ -17,6 +15,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.util.Assert;
+import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
+import software.amazon.awssdk.services.kinesis.model.HashKeyRange;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -79,7 +79,7 @@ public class TestKinesisStreamsQIO extends TestUtils{
 
         private List<HashKeyRange> fakeShardRanges;
 
-        public HashProviderFactoryTest(AmazonKinesis amazonKinesis, String streamName, IStreamShardHelper iStreamShardHelper) {
+        public HashProviderFactoryTest(KinesisAsyncClient amazonKinesis, String streamName, IStreamShardHelper iStreamShardHelper) {
             super(amazonKinesis, streamName, iStreamShardHelper);
         }
 
@@ -168,8 +168,8 @@ public class TestKinesisStreamsQIO extends TestUtils{
         double recordMaxSize = 100_000;
         int flushSeconds = 10;
 
-        HashKeyRange shard1Range =  new HashKeyRange().withStartingHashKey("0").withEndingHashKey("140282366920938463463374607431768211455");
-        HashKeyRange shard2Range =  new HashKeyRange().withStartingHashKey("140282366920938463463374607431768211456").withEndingHashKey("340282366920938463463374607431768211455");
+        HashKeyRange shard1Range =  HashKeyRange.builder().startingHashKey("0").endingHashKey("140282366920938463463374607431768211455").build();
+        HashKeyRange shard2Range =  HashKeyRange.builder().startingHashKey("140282366920938463463374607431768211456").endingHashKey("340282366920938463463374607431768211455").build();
 
         String streamName = "FAKE_STREAM";
         List<HashKeyRange> hashKeyRanges = Arrays.asList(
