@@ -1,7 +1,7 @@
 package com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders;
 
 
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
 import software.amazon.awssdk.services.kinesis.model.HashKeyRange;
 
 import java.util.SplittableRandom;

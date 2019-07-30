@@ -31,7 +31,7 @@ public class KinesisStreamsAccumulatorFactory<I> implements IQueueIOAccumulatorF
 
 
     public static <I> KinesisStreamsAccumulatorFactory<I> getBasicRecordFactory(double byteSizeLimit, IKinesisStreamsStringMapper<I> stringMapper){
-        return new KinesisStreamsAccumulatorFactory<>(byteSizeLimit, stringMapper, new BasicKinesisStreamsRecordMapper(), new BasicKinesisStreamsByteMapper(), new BasicKinesisStreamsAccumulatorLengthFunction<>());
+        return new KinesisStreamsAccumulatorFactory<I>(byteSizeLimit, stringMapper, new BasicKinesisStreamsRecordMapper(), new BasicKinesisStreamsByteMapper(), new BasicKinesisStreamsAccumulatorLengthFunction<>());
     }
 
 

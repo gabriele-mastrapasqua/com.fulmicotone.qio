@@ -8,10 +8,10 @@ import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.Kinesi
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.ExplicitShardKeyHelper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.HashProviderFactory;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.interfaces.IStreamShardHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IStreamShardHelper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.utils.HashKeyRangeHelper;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

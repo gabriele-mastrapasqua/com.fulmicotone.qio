@@ -1,8 +1,9 @@
 package com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders;
 
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.HashProvider;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IExplicitHashProvider;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.interfaces.IStreamShardHelper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.abstracts.AbstractHashProviderFactory;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.interfaces.IExplicitHashProvider;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.interfaces.IStreamShardHelper;
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
 
 
