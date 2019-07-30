@@ -45,15 +45,17 @@ dependencies {
     compile group: 'com.amazonaws', name: 'aws-java-sdk-kinesis', version: '1.11.534'
     compile group: 'com.amazonaws', name: 'amazon-kinesis-producer', version: '0.12.11'
 
-    compile 'software.amazon.kinesis:amazon-kinesis-client:2.0.0'
+    compile 'software.amazon.kinesis:amazon-kinesis-client:2.0.3'
     compile "software.amazon.awssdk:kinesisfirehose:2.0.0-preview-11"
 
     //compile "software.amazon.awssdk:aws-json-protocol:2.0.0"
     compile "software.amazon.awssdk:sdk-core:2.0.1"
     compile "software.amazon.awssdk:protocol-core:2.0.0-preview-13"
-    compile group: 'software.amazon.awssdk', name: 'aws-core', version: '2.0.0'
-    compile group: 'software.amazon.awssdk', name: 'core', version: '2.0.0', ext: 'pom'
-    compile group: 'software.amazon.awssdk', name: 'sdk-core', version: '2.0.0'
+    compile group: 'software.amazon.awssdk', name: 'aws-core', version: '2.0.-preview-12'
+    compile group: 'software.amazon.awssdk', name: 'core', version: '2.0.0-preview-12', ext: 'pom'
+    compile group: 'software.amazon.awssdk', name: 'sdk-core', version: '2.0.-preview-12'
+    compile group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.0.0-preview-13'
+    compile group: 'software.amazon.awssdk', name: 'http-clients', version: '2.0.6'
 
 
 

@@ -18,6 +18,10 @@ import org.springframework.util.Assert;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.client.builder.SdkAsyncClientBuilder;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.firehose.FirehoseAsyncClient;
 import software.amazon.awssdk.services.firehose.model.Record;
@@ -335,10 +339,16 @@ public class TestFirehoseQIO extends TestUtils{
         AwsBasicCredentials credentials = AwsBasicCredentials.create(
                 System.getenv("AWS_ACCESS_KEY_ID"),
                 System.getenv("AWS_SECRET_KEY"));
+        /*ClientOverrideConfiguration clientOverrideConfiguration = ClientOverrideConfiguration.builder()
+                .retryPolicy(RetryPolicy.none())
+                //.retryPolicy(RetryPolicy.builder().numRetries(2).build())
+                .build() ;
+        */
         FirehoseAsyncClient client = FirehoseAsyncClient.builder()
                 .region(Region.US_EAST_1)
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .httpClient()
+                //.overrideConfiguration(clientOverrideConfiguration)
+
                 .build();
 
         QueueIOService firehoseQIOService = new FirehoseQIOService(String.class, 2)
@@ -358,34 +368,7 @@ public class TestFirehoseQIO extends TestUtils{
                 });
 
 
-        /*try {
-            List<List<Record>> elementsProduced = new ArrayList<>();
-            Queues.drain(producedRecords, elementsProduced, 10, 15, TimeUnit.SECONDS);
-
-
-            // EXPECT THAT EVERY CHUNK HAS A TOTAL SUM OF BYTES < byteSizeLimit
-            Assert.isTrue(elementsProduced
-                    .stream()
-                    .mapToInt(s -> s.stream().mapToInt(record -> record.data().asByteArray().length).sum())
-                    .filter(sum -> sum < byteSizeLimit)
-                    .count() == elementsProduced.size(), "Size > "+byteSizeLimit);
-
-            // EXPECT EVERY SINGLE Record HAVE A BYTE SUM < recordMaxSize
-            Assert.isTrue(elementsProduced
-                    .stream()
-                    .flatMap(Collection::stream)
-                    .filter(r -> r.data().asByteArray().length <= recordMaxSize)
-                    .count() == elementsProduced.stream().mapToLong(Collection::size).sum(), "Single record have size > "+recordMaxSize);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            Assert.isTrue(false, "Cannot pool from result queue");
-        }*/
-
-
         Thread.sleep(100_000);
-
-
     }
 
 }
