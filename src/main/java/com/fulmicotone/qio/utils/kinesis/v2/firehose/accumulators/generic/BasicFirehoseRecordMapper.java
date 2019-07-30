@@ -1,8 +1,8 @@
 package com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic;
 
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseByteMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseByteMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseRecordMapper;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseStringMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseStringMapper;
 import com.google.common.collect.Lists;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.firehose.model.Record;

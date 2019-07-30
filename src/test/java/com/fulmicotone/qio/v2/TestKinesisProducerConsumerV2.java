@@ -1,28 +1,31 @@
+// test on dev: set ENV variables when running.
+
+/*
 package com.fulmicotone.qio.v2;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
 import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsAccumulatorLengthFunction;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsRecordMapper;
-import com.fulmicotone.qio.v2.functions.FnKinesisJsonStringTransform;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.services.QueueIOService;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.common.KinesisJsonListDecoder;
+import com.fulmicotone.qio.utils.kinesis.streams.common.KinesisJsonListDecoder;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.KinesisConsumerQIOService;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.RecordProcessorFactory;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumer;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumerEntry;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLPartitionKey;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumer;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLPartitionKey;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.KinesisStreamsQIOService;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsAccumulatorLengthFunction;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsByteMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsRecordMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.HashProviderFactory;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
+import com.fulmicotone.qio.v2.functions.FnKinesisJsonStringTransform;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,8 +36,12 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
 import software.amazon.kinesis.common.KinesisClientUtil;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(JUnit4.class)
 public class TestKinesisProducerConsumerV2 {
@@ -89,8 +96,6 @@ public class TestKinesisProducerConsumerV2 {
 
     public KinesisAsyncClient newKinesisClient() {
         return KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder()
-                /*.httpClientBuilder(NettyNioAsyncHttpClient.builder()
-                        .maxConcurrency(100))*/
                 .region(Region.US_EAST_1)
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
         );
@@ -175,3 +180,4 @@ public class TestKinesisProducerConsumerV2 {
 
 
 }
+*/

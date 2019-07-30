@@ -1,6 +1,6 @@
 package com.fulmicotone.qio.v2.functions;
 
-import com.fulmicotone.qio.utils.kinesis.v2.streams.common.interfaces.IKinesisDataTransform;
+import com.fulmicotone.qio.utils.kinesis.streams.common.interfaces.IKinesisDataTransform;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,15 +3,15 @@ package com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators;
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulator;
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorFactory;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic.BasicFirehoseAccumulatorLengthFunction;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic.BasicFirehoseByteMapper;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic.BasicFirehoseRecordMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.generic.BasicFirehoseByteMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic.FirehoseAccumulatorLengthFunction;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseByteMapper;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseRecordMapper;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseStringMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseByteMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseStringMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.smartGZIP.SmartGZIPFirehoseAccumulatorLengthFunction;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.smartGZIP.SmartGZIPFirehoseRecordMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.models.FirehoseMapper;
+import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic.BasicFirehoseRecordMapper;
+import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseRecordMapper;
+import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.smartGZIP.SmartGZIPFirehoseRecordMapper;
 import software.amazon.awssdk.services.firehose.model.Record;
 
 public class FirehoseAccumulatorFactory<I> implements IQueueIOAccumulatorFactory<I, Record> {

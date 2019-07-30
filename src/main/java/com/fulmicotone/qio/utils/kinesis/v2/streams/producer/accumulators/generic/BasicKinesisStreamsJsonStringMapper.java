@@ -1,7 +1,7 @@
 package com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic;
 
-import com.fulmicotone.qio.utils.kinesis.v2.streams.common.KinesisJsonListEncoder;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.common.interfaces.IKinesisListEncoder;
+import com.fulmicotone.qio.utils.kinesis.streams.common.KinesisJsonListEncoder;
+import com.fulmicotone.qio.utils.kinesis.streams.common.interfaces.IKinesisListEncoder;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.interfaces.IKinesisStreamsStringMapper;
 
 import java.util.List;

@@ -6,8 +6,8 @@ import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.services.QueueIOService;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.FirehoseQIOService;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.FirehoseAccumulatorFactory;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic.BasicFirehoseJsonStringMapper;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.enums.PutRecordMode;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.generic.BasicFirehoseJsonStringMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.enums.PutRecordMode;
 import com.google.common.collect.Queues;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -315,6 +315,10 @@ public class TestFirehoseQIOV2 extends TestUtils {
     }
 
 
+
+    // test on dev: set ENV variables when running.
+
+    /*
     @Test
     public void test_Put_Record_BATCH_Basic_Accumulator_RealFirehose()throws Exception{
         double byteSizeLimit = PUT_BATCH_LIMIT_MB;
@@ -353,5 +357,6 @@ public class TestFirehoseQIOV2 extends TestUtils {
 
         Thread.sleep(100_000);
     }
+    */
 
 }

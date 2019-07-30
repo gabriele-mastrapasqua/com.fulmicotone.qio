@@ -1,6 +1,6 @@
 package com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2;
 
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumerEntry;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
 import software.amazon.kinesis.processor.ShardRecordProcessor;
 import software.amazon.kinesis.processor.ShardRecordProcessorFactory;
 import software.amazon.kinesis.retrieval.KinesisClientRecord;
@@ -65,7 +65,7 @@ public class RecordProcessorFactory implements ShardRecordProcessorFactory {
     @Override
     public ShardRecordProcessor shardRecordProcessor() {
         return new RecordProcessor()
-                .withPossibileOutputs(new HashSet<>(possibleOutputs))
+                .withPossibileOutputs(new HashSet(possibleOutputs))
                 .withBackoffTime(backoffTime)
                 .withCheckpointInterval(checkpointInterval)
                 .withExecutor(threadPoolExecutor)

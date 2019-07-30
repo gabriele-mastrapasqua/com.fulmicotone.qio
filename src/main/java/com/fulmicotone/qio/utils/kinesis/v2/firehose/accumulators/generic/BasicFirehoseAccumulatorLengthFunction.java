@@ -1,7 +1,7 @@
 package com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic;
 
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseByteMapper;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseStringMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseByteMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseStringMapper;
 
 import java.util.Collections;
 

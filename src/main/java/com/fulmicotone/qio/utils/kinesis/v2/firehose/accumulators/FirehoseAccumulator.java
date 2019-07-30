@@ -2,9 +2,9 @@ package com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators;
 
 import com.fulmicotone.qio.components.accumulator.IQueueIOAccumulatorLengthFunction;
 import com.fulmicotone.qio.components.accumulator.QueueIOAccumulator;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseByteMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseByteMapper;
+import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseStringMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseRecordMapper;
-import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.interfaces.IFirehoseStringMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.firehose.models.FirehoseMapper;
 import software.amazon.awssdk.services.firehose.model.Record;
 

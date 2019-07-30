@@ -1,7 +1,7 @@
 package com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2;
 
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumer;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumerEntry;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumer;
+import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.kinesis.exceptions.InvalidStateException;
