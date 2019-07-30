@@ -43,7 +43,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
-public class TestKinesisProducerConsumer {
+public class TestKinesisProducerConsumerV2 {
     private AwsBasicCredentials credentials = AwsBasicCredentials.create(
             System.getenv("AWS_ACCESS_KEY_ID"),
             System.getenv("AWS_SECRET_KEY"));

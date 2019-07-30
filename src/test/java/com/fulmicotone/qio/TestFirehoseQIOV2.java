@@ -1,5 +1,8 @@
 package com.fulmicotone.qio;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fulmicotone.qio.example.models.Intent;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.services.QueueIOService;
@@ -14,6 +17,11 @@ import org.junit.runners.JUnit4;
 import org.springframework.util.Assert;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.client.builder.SdkAsyncClientBuilder;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.firehose.FirehoseAsyncClient;
 import software.amazon.awssdk.services.firehose.model.Record;
@@ -22,7 +30,10 @@ import java.util.*;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.fulmicotone.qio.utils.kinesis.firehose.accumulators.generic.BasicFirehoseRecordMapper.RECORD_MAX_SIZE_IN_BYTES;
 import static com.fulmicotone.qio.utils.kinesis.firehose.accumulators.smartGZIP.SmartGZIPFirehoseRecordMapper.RECORD_COMPRESSED_MAX_SIZE_IN_BYTES;
@@ -30,7 +41,7 @@ import static com.fulmicotone.qio.utils.kinesis.firehose.consts.PutRecordLimits.
 import static com.fulmicotone.qio.utils.kinesis.firehose.consts.PutRecordLimits.PUT_LIMIT_MB;
 
 @RunWith(JUnit4.class)
-public class TestFirehoseQIO extends TestUtils{
+public class TestFirehoseQIOV2 extends TestUtils{
 
 
     public class FirehoseQIOServiceTest extends FirehoseQIOService<String> {
