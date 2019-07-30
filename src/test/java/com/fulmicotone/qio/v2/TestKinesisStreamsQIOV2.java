@@ -1,5 +1,6 @@
-package com.fulmicotone.qio;
+package com.fulmicotone.qio.v2;
 
+import com.fulmicotone.qio.TestUtils;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.KinesisStreamsQIOService;
@@ -28,7 +29,7 @@ import java.util.function.Consumer;
 
 
 @RunWith(JUnit4.class)
-public class TestKinesisStreamsQIOV2 extends TestUtils{
+public class TestKinesisStreamsQIOV2 extends TestUtils {
 
 
     public class KinesisStreamsQIOServiceTest extends KinesisStreamsQIOService<String> {

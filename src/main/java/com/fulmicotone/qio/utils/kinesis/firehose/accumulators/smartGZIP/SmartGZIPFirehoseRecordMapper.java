@@ -1,13 +1,12 @@
 package com.fulmicotone.qio.utils.kinesis.firehose.accumulators.smartGZIP;
 
+import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseByteMapper;
 import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseRecordMapper;
 import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.interfaces.IFirehoseStringMapper;
 import com.fulmicotone.qio.utils.kinesis.utils.FnByteCompressionMapper;
 import com.fulmicotone.qio.utils.kinesis.utils.FnPrependNullBytesToByteArray;
 import com.google.common.collect.Lists;
-import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.services.firehose.model.Record;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -50,7 +49,9 @@ public class SmartGZIPFirehoseRecordMapper<I> implements IFirehoseRecordMapper<I
         // IF RECORD < expectedSize I will add null bytes. That's because GZIP will compress Json 9/12 times than the original size and we need a compression ration of max 5 times.
         byte[] compressedWithNullPrefix = (compressed.get().length > expectedSize) ? compressed.get() : fnPrependNullBytesToByteArray.apply(compressed.get()).apply(expectedSize);
 
-        Record record=Record.builder().data(SdkBytes.fromByteBuffer(ByteBuffer.wrap(compressedWithNullPrefix))) .build();
+        Record record=new Record();
+        record.setData(ByteBuffer.wrap(compressedWithNullPrefix));
+
         return Optional.of(record);
     }
 

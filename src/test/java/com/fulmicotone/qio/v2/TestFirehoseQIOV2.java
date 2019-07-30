@@ -1,7 +1,8 @@
-package com.fulmicotone.qio;
+package com.fulmicotone.qio.v2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fulmicotone.qio.TestUtils;
 import com.fulmicotone.qio.example.models.Intent;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
@@ -41,7 +42,7 @@ import static com.fulmicotone.qio.utils.kinesis.firehose.consts.PutRecordLimits.
 import static com.fulmicotone.qio.utils.kinesis.firehose.consts.PutRecordLimits.PUT_LIMIT_MB;
 
 @RunWith(JUnit4.class)
-public class TestFirehoseQIOV2 extends TestUtils{
+public class TestFirehoseQIOV2 extends TestUtils {
 
 
     public class FirehoseQIOServiceTest extends FirehoseQIOService<String> {

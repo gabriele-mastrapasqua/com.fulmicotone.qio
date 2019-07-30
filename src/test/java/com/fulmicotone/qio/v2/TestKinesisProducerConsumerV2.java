@@ -1,13 +1,10 @@
-package com.fulmicotone.qio;
+package com.fulmicotone.qio.v2;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
 import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
-import com.fulmicotone.qio.example.models.DomainCount;
-import com.fulmicotone.qio.example.models.PageView;
-import com.fulmicotone.qio.example.utils.DomainExtractor;
-import com.fulmicotone.qio.functions.FnKinesisJsonStringTransform;
+import com.fulmicotone.qio.v2.functions.FnKinesisJsonStringTransform;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
@@ -22,7 +19,6 @@ import com.fulmicotone.qio.utils.kinesis.streams.producer.KinesisStreamsQIOServi
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsByteMapper;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.ExplicitShardKeyHelper;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.HashProviderFactory;
 import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
 import com.google.common.collect.Sets;
@@ -30,17 +26,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
 import software.amazon.kinesis.common.KinesisClientUtil;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
 public class TestKinesisProducerConsumerV2 {
