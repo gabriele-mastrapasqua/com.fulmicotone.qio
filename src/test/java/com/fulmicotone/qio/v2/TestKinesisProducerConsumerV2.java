@@ -4,23 +4,25 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
 import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsAccumulatorLengthFunction;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsRecordMapper;
 import com.fulmicotone.qio.v2.functions.FnKinesisJsonStringTransform;
 import com.fulmicotone.qio.interfaces.IQueueIOIngestionTask;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.services.QueueIOService;
-import com.fulmicotone.qio.utils.kinesis.streams.common.KinesisJsonListDecoder;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.KinesisConsumerQIOService;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.RecordProcessorFactory;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumer;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
-import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLPartitionKey;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.KinesisStreamsQIOService;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsByteMapper;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.HashProviderFactory;
-import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.common.KinesisJsonListDecoder;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.KinesisConsumerQIOService;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.RecordProcessorFactory;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumer;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumerEntry;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLPartitionKey;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.KinesisStreamsQIOService;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsByteMapper;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.HashProviderFactory;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -105,11 +107,11 @@ public class TestKinesisProducerConsumerV2 {
         // with QIO: produce on kinesis gzipped records, then read from kinesis -> map to syncs -> http req with fibers
         double recordMaxSize = 100_000;
         int flushSeconds = 10;
-        KinesisStreamsAccumulatorFactory<String> factory =  new KinesisStreamsAccumulatorFactory<>(recordMaxSize,
+        KinesisStreamsAccumulatorFactory<String> factory =  new KinesisStreamsAccumulatorFactory<String>(recordMaxSize,
                 new BasicKinesisStreamsJsonStringMapper<>(),
-                new com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsRecordMapper(),
+                new BasicKinesisStreamsRecordMapper(),
                 new BasicKinesisStreamsByteMapper(),
-                new com.fulmicotone.qio.utils.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsAccumulatorLengthFunction<>());
+                new BasicKinesisStreamsAccumulatorLengthFunction<String>());
 
         KinesisAsyncClient amazonKinesis = newKinesisClient();
         KinesisProducer kinesisProducer = kinesisProducer();
@@ -154,7 +156,7 @@ public class TestKinesisProducerConsumerV2 {
 
         // start consuming kinesis:
         Set<KCLConsumerEntry> consumerEntries = Sets.newHashSet(syncEntry);
-        RecordProcessorFactory recordProcessorFactory = new com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.RecordProcessorFactory()
+        RecordProcessorFactory recordProcessorFactory = new com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.RecordProcessorFactory()
                 .withPossibleOutputs(consumerEntries)
                 .withBackoffTime(100)
                 .withCheckpointInterval(100)

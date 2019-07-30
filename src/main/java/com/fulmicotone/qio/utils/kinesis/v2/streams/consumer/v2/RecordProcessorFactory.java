@@ -1,6 +1,6 @@
-package com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v1;
+package com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2;
 
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v1.models.KCLConsumerEntry;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models.KCLConsumerEntry;
 import software.amazon.kinesis.processor.ShardRecordProcessor;
 import software.amazon.kinesis.processor.ShardRecordProcessorFactory;
 import software.amazon.kinesis.retrieval.KinesisClientRecord;

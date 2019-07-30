@@ -1,4 +1,4 @@
-package com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v1.models;
+package com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.models;
 
 import java.util.List;
 

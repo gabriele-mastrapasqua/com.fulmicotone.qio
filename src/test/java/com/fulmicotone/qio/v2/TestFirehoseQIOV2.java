@@ -1,16 +1,13 @@
 package com.fulmicotone.qio.v2;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fulmicotone.qio.TestUtils;
-import com.fulmicotone.qio.example.models.Intent;
 import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.services.QueueIOService;
-import com.fulmicotone.qio.utils.kinesis.firehose.FirehoseQIOService;
-import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.FirehoseAccumulatorFactory;
-import com.fulmicotone.qio.utils.kinesis.firehose.accumulators.generic.BasicFirehoseJsonStringMapper;
-import com.fulmicotone.qio.utils.kinesis.firehose.enums.PutRecordMode;
+import com.fulmicotone.qio.utils.kinesis.v2.firehose.FirehoseQIOService;
+import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.FirehoseAccumulatorFactory;
+import com.fulmicotone.qio.utils.kinesis.v2.firehose.accumulators.generic.BasicFirehoseJsonStringMapper;
+import com.fulmicotone.qio.utils.kinesis.v2.firehose.enums.PutRecordMode;
 import com.google.common.collect.Queues;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,11 +15,6 @@ import org.junit.runners.JUnit4;
 import org.springframework.util.Assert;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.client.builder.SdkAsyncClientBuilder;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.retry.RetryPolicy;
-import software.amazon.awssdk.http.apache.ApacheHttpClient;
-import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.firehose.FirehoseAsyncClient;
 import software.amazon.awssdk.services.firehose.model.Record;
@@ -31,10 +23,7 @@ import java.util.*;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.fulmicotone.qio.utils.kinesis.firehose.accumulators.generic.BasicFirehoseRecordMapper.RECORD_MAX_SIZE_IN_BYTES;
 import static com.fulmicotone.qio.utils.kinesis.firehose.accumulators.smartGZIP.SmartGZIPFirehoseRecordMapper.RECORD_COMPRESSED_MAX_SIZE_IN_BYTES;
@@ -340,18 +329,11 @@ public class TestFirehoseQIOV2 extends TestUtils {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(
                 System.getenv("AWS_ACCESS_KEY_ID"),
                 System.getenv("AWS_SECRET_KEY"));
-        /*ClientOverrideConfiguration clientOverrideConfiguration = ClientOverrideConfiguration.builder()
-                .retryPolicy(RetryPolicy.none())
-                //.retryPolicy(RetryPolicy.builder().numRetries(2).build())
-                .build() ;
-        */
         FirehoseAsyncClient client = FirehoseAsyncClient.builder()
                 .region(Region.US_EAST_1)
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 //.overrideConfiguration(clientOverrideConfiguration)
-
                 .build();
-
         QueueIOService firehoseQIOService = new FirehoseQIOService(String.class, 2)
                 .withAmazonKinesisFirehoseClient(client)
                 .withStreamNames(streamNames)
