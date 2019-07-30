@@ -2,11 +2,12 @@ package com.fulmicotone.qio.models;
 
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class OutputQueues {
 
-    private HashMap<Class<?>, List<Queue<?>>> queueMap = new HashMap<>();
+    private Map<Class<?>, List<Queue<?>>> queueMap = new ConcurrentHashMap<>();
 
 
     public OutputQueues withQueue(Class<?> clazz, Queue<?> queue)
@@ -15,23 +16,6 @@ public class OutputQueues {
         queueList.add(queue);
         queueMap.put(clazz, queueList);
         return this;
-    }
-
-    public <I>Optional<List<Queue<I>>> getQueues(Class<I> clazz)
-    {
-        if(queueMap.get(clazz) == null)
-            return Optional.empty();
-
-        List<Queue<I>>  queues = queueMap
-                .get(clazz)
-                .stream()
-                .map(o ->(Queue<I>)o)
-                .collect(Collectors.toList());
-
-        if(queues.size() == 0)
-            return Optional.empty();
-        else
-            return Optional.of(queues);
     }
 
 
@@ -48,15 +32,18 @@ public class OutputQueues {
     }
 
 
-
     public <I>void pushInQueue(Class<I> clazz, I elm)
     {
-        getQueues(clazz).ifPresent(queues -> queues.forEach(q -> q.add(elm)));
+        for(Queue<?> q : queueMap.get(clazz)){
+            ((Queue<I>)q).add(elm);
+        }
     }
 
     public <I>void pushAllInQueue(Class<I> clazz, List<I> elms)
     {
-        getQueues(clazz).ifPresent(queues -> queues.forEach(q -> q.addAll(elms)));
+        for(Queue<?> q : queueMap.get(clazz)){
+            ((Queue<I>)q).addAll(elms);
+        }
     }
 
 }
