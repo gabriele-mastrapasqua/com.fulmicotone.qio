@@ -100,7 +100,7 @@ public class TestFirehoseQIOV2 extends TestUtils {
 
 
         // GENERATE FAKE DATAS
-        this.tenByteStrings(10_000_000)
+        this.tenByteStrings(100_000)
                 .forEach(i -> {
                     firehoseQIOService.getInputQueue().add(i);
                 });
@@ -161,7 +161,7 @@ public class TestFirehoseQIOV2 extends TestUtils {
 
 
         // GENERATE FAKE DATAS
-        this.tenByteStrings(10_000_000)
+        this.tenByteStrings(100_000)
                 .forEach(i -> {
                     firehoseQIOService.getInputQueue().add(i);
                 });
@@ -222,7 +222,7 @@ public class TestFirehoseQIOV2 extends TestUtils {
 
 
         // GENERATE FAKE DATAS
-        this.tenByteStrings(10_000_000)
+        this.tenByteStrings(100_000)
                 .forEach(i -> {
                     firehoseQIOService.getInputQueue().add(i);
                 });
@@ -283,7 +283,7 @@ public class TestFirehoseQIOV2 extends TestUtils {
 
 
         // GENERATE FAKE DATAS
-        this.tenByteStrings(10_000_000)
+        this.tenByteStrings(100_000)
                 .forEach(i -> {
                     firehoseQIOService.getInputQueue().add(i);
                 });

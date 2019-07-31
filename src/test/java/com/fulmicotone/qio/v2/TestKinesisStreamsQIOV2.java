@@ -133,7 +133,7 @@ public class TestKinesisStreamsQIOV2 extends TestUtils {
 
 
         // GENERATE FAKE DATAS: Expected 10MB in size
-        this.tenByteStrings(1_000_000)
+        this.tenByteStrings(100_000)
                 .forEach(i -> kinesisStreamsQIOServiceTest.getInputQueue().add(i));
 
 
@@ -154,7 +154,7 @@ public class TestKinesisStreamsQIOV2 extends TestUtils {
             Assert.isTrue(elementsProduced
                     .stream()
                     .mapToInt(r -> r.array().length)
-                    .sum() > (1_000_000*10), "All records have size > "+recordMaxSize);
+                    .sum() > (100_000*10), "All records have size > "+recordMaxSize);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -201,7 +201,7 @@ public class TestKinesisStreamsQIOV2 extends TestUtils {
 
 
         // GENERATE FAKE DATAS: 10 MB Strings
-        this.tenByteStrings(1_000_000)
+        this.tenByteStrings(100_000)
                 .forEach(i -> kinesisStreamsQIOServiceTest.getInputQueue().add(i));
 
 
@@ -222,7 +222,7 @@ public class TestKinesisStreamsQIOV2 extends TestUtils {
             Assert.isTrue(elementsProduced
                     .stream()
                     .mapToInt(r -> r.array().length)
-                    .sum() > (1_000_000*10), "All records record have size > "+recordMaxSize);
+                    .sum() > (100_000*10), "All records record have size > "+recordMaxSize);
 
             // EXPECT THAT HALF OF HASH KEYS BELONGS TO ONE SHARD AND THE OTHER HALF TO ANOTHER.
             List<String> keys = new ArrayList<>();
