@@ -101,7 +101,7 @@ public class TestKinesisProducerConsumerV2 {
         );
 
     }
-            
+
     // test kinesis producer and consumer
 
     @Test
