@@ -38,11 +38,26 @@ repositories {
 }
 
 dependencies {
+    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
     testCompile  "org.springframework.boot:spring-boot-starter-test:1.5.7.RELEASE"
     testCompile group: 'com.amazonaws', name: 'aws-java-sdk-cloudwatch', version: '1.11.513'
+
+    // for kinesis v1
     compile group: 'com.amazonaws', name: 'aws-java-sdk-kinesis', version: '1.11.534'
     compile group: 'com.amazonaws', name: 'amazon-kinesis-producer', version: '0.12.11'
     compile group: 'com.amazonaws', name: 'amazon-kinesis-client', version: '1.9.1'
+
+    // for kinesis v2 data stream and firehose
+    compile 'software.amazon.kinesis:amazon-kinesis-client:2.0.3'
+    compile "software.amazon.awssdk:kinesisfirehose:2.0.0-preview-11"
+    compile "software.amazon.awssdk:sdk-core:2.0.1"
+    compile "software.amazon.awssdk:protocol-core:2.0.0-preview-13"
+    compile group: 'software.amazon.awssdk', name: 'aws-core', version: '2.0.-preview-12'
+    compile group: 'software.amazon.awssdk', name: 'core', version: '2.0.0-preview-12', ext: 'pom'
+    compile group: 'software.amazon.awssdk', name: 'sdk-core', version: '2.0.-preview-12'
+    compile group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.0.0-preview-13'
+    compile group: 'software.amazon.awssdk', name: 'http-clients', version: '2.0.6'
+
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
     compile group: 'com.netflix.servo', name: 'servo-aws', version: '0.12.16'
