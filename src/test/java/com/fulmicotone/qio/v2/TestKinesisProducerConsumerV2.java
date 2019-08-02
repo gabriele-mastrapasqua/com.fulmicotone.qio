@@ -3,6 +3,7 @@
 /*
 package com.fulmicotone.qio.v2;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
@@ -12,11 +13,12 @@ import com.fulmicotone.qio.interfaces.IQueueIOTransform;
 import com.fulmicotone.qio.models.OutputQueues;
 import com.fulmicotone.qio.services.QueueIOService;
 import com.fulmicotone.qio.utils.kinesis.streams.common.KinesisJsonListDecoder;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.KinesisConsumerQIOService;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.RecordProcessorFactory;
 import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumer;
 import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLConsumerEntry;
 import com.fulmicotone.qio.utils.kinesis.streams.consumer.v1.models.KCLPartitionKey;
+import com.fulmicotone.qio.utils.kinesis.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.KinesisConsumerQIOService;
+import com.fulmicotone.qio.utils.kinesis.v2.streams.consumer.v2.RecordProcessorFactory;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.KinesisStreamsQIOService;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.KinesisStreamsAccumulatorFactory;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsAccumulatorLengthFunction;
@@ -24,7 +26,6 @@ import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generi
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsJsonStringMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.accumulators.generic.BasicKinesisStreamsRecordMapper;
 import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.HashProviderFactory;
-import com.fulmicotone.qio.utils.kinesis.v2.streams.producer.hashproviders.utils.RoundRobinStreamShardHelper;
 import com.fulmicotone.qio.v2.functions.FnKinesisJsonStringTransform;
 import com.google.common.collect.Sets;
 import org.junit.Test;
@@ -33,12 +34,16 @@ import org.junit.runners.JUnit4;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
+import software.amazon.kinesis.common.ConfigsBuilder;
 import software.amazon.kinesis.common.KinesisClientUtil;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -170,8 +175,25 @@ public class TestKinesisProducerConsumerV2 {
                         new LinkedBlockingQueue<Runnable>()) )
                 ;
 
-        KinesisConsumerQIOService kinesisConsumerQIOService = new KinesisConsumerQIOService(recordProcessorFactory, inputStreamName,
-                applicationName, Region.US_EAST_1, 100);
+        // create async v2 client using KinesisClientUtil - see: https://docs.amazonaws.cn/en_us/streams/latest/dev/kcl-migration.html#worker-migration
+        // as suggested by documentation, set max concurrency high enough to the correct usage of the client
+        KinesisAsyncClient kinesisClient = KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder()
+                .credentialsProvider( StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(
+                                System.getenv("AWS_ACCESS_KEY_ID"),
+                                System.getenv("AWS_SECRET_KEY"))
+                        )
+                )
+                .region( Region.US_EAST_1  )
+        );
+        DynamoDbAsyncClient dynamoClient = DynamoDbAsyncClient.builder().region(Region.US_EAST_1).build();
+        CloudWatchAsyncClient cloudWatchClient = CloudWatchAsyncClient.builder().region(Region.US_EAST_1).build();
+
+        ConfigsBuilder configsBuilder = new ConfigsBuilder(inputStreamName, applicationName, kinesisClient, dynamoClient, cloudWatchClient,
+                UUID.randomUUID().toString(), recordProcessorFactory);
+
+
+        KinesisConsumerQIOService kinesisConsumerQIOService = new KinesisConsumerQIOService(configsBuilder);
         kinesisConsumerQIOService.startConsuming();
 
 
