@@ -28,17 +28,16 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
     private ShardRecordProcessorFactory recordProcessorFactory;
     private Scheduler scheduler;
     private ConfigsBuilder configsBuilder;
-    private Region region = Region.US_EAST_1;
-    private int maxConcurrency = 100;
 
-    public KinesisConsumerQIOService(ConfigsBuilder configsBuilder) {
+    public KinesisConsumerQIOService(ConfigsBuilder configsBuilder, Scheduler scheduler) {
         super(Void.class, 1, 1, null, t -> t);
         this.configsBuilder = configsBuilder;
-        startKCL();
+        this.scheduler=scheduler;
+        //startKCL();
     }
 
 
-    public void startKCL()
+    /*public void startKCL()
     {
         this.scheduler = new Scheduler(
                 configsBuilder.checkpointConfig(),
@@ -49,7 +48,7 @@ public class KinesisConsumerQIOService extends QueueIOService<Void, Void> {
                 configsBuilder.processorConfig(),
                 configsBuilder.retrievalConfig()
         );
-    }
+    }*/
 
     @Override
     public void startConsuming() {

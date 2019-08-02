@@ -39,6 +39,9 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
 import software.amazon.kinesis.common.ConfigsBuilder;
 import software.amazon.kinesis.common.KinesisClientUtil;
+import software.amazon.kinesis.coordinator.Scheduler;
+import software.amazon.kinesis.retrieval.RetrievalConfig;
+import software.amazon.kinesis.retrieval.polling.PollingConfig;
 
 import java.util.Arrays;
 import java.util.List;
@@ -192,8 +195,23 @@ public class TestKinesisProducerConsumerV2 {
         ConfigsBuilder configsBuilder = new ConfigsBuilder(inputStreamName, applicationName, kinesisClient, dynamoClient, cloudWatchClient,
                 UUID.randomUUID().toString(), recordProcessorFactory);
 
+        // Kinesis V2 disable Enhanched FanOut - see: https://github.com/awslabs/amazon-kinesis-client/issues/429
+        PollingConfig pollingConfig = new PollingConfig(inputStreamName, kinesisClient);
+        RetrievalConfig retrievalConfigWithoutFanout = new RetrievalConfig(kinesisClient, inputStreamName, applicationName).retrievalSpecificConfig(pollingConfig);
 
-        KinesisConsumerQIOService kinesisConsumerQIOService = new KinesisConsumerQIOService(configsBuilder);
+        Scheduler scheduler = new Scheduler(
+                configsBuilder.checkpointConfig(),
+                configsBuilder.coordinatorConfig(),
+                configsBuilder.leaseManagementConfig(),
+                configsBuilder.lifecycleConfig(),
+                configsBuilder.metricsConfig(),
+                configsBuilder.processorConfig(),
+                //configsBuilder.retrievalConfig()
+                retrievalConfigWithoutFanout
+        );
+
+
+        KinesisConsumerQIOService kinesisConsumerQIOService = new KinesisConsumerQIOService(configsBuilder, scheduler);
         kinesisConsumerQIOService.startConsuming();
 
 
